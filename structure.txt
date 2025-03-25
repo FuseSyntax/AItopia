@@ -1,0 +1,42 @@
+AItopia/
+├── frontend/
+│   ├── package.json
+│   ├── next.config.ts
+│   ├── tailwind.config.js
+│   ├── postcss.config.js
+│   ├── pages/
+│   │   ├── _app.tsx
+│   │   ├── index.tsx
+│   │   ├── about.tsx
+│   │   ├── contact.tsx
+│   │   └── tools/
+│   │       ├── bg-remove.tsx
+│   │       └── add-subtitle.tsx
+│   ├── components/
+│   │   ├── Layout.tsx
+│   │   ├── Navbar.tsx
+│   │   ├── Footer.tsx
+│   │   └── ToolCard.tsx
+│   └── styles/
+│       └── globals.css
+├── backend/
+│   ├── package.json
+│   ├── server.js
+│   ├── .env
+│   ├── .env.example
+│   ├── tsconfig.json
+│   ├── routes/
+│   │   ├── toolRoutes.ts
+│   │   └── userRoutes.ts
+│   ├── controllers/
+│   │   ├── toolController.ts
+│   │   └── userController.ts
+│   ├── config/
+│   │   └── db.ts
+│   └── mcp/
+│   │   └── agentManager.ts
+├── prisma/
+│   ├── schema.prisma
+│   └── migrations/
+└── README.md
+
