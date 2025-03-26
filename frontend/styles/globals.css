@@ -2,24 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Aeroport';
+  src: url('/fonts/Aeroport-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Loos Extra Wide';
+  src: url('/fonts/LoosExtraWide-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Loos Extra Wide';
+  src: url('/fonts/LoosExtraWide-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+
+@layer utilities {
+  .text-custom-black {
+    @apply text-[#000000];
+  }
+
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  .fixed-inset-0 {
+    @apply fixed top-0 left-0 right-0 bottom-0;
+  }
+}
+
 :root {
   --gradient-cyan: #00ffff;
   --gradient-blue: #0066ff;
 }
 
 body {
-  @apply bg-gray-950 text-gray-100;
+  @apply text-custom-black bg-custom-black;
+
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-gray-900;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-gradient-to-b from-cyan-500 to-blue-500 rounded-full;
-}
