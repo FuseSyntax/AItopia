@@ -44,7 +44,10 @@
 }
 
 body {
-  @apply text-custom-black bg-custom-black;
-
+  @apply text-white bg-custom-black;
+  overflow-x: hidden;
 }
 
+svg g{
+  cursor: pointer;
+}
