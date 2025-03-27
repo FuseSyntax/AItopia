@@ -51,3 +51,18 @@ body {
 svg g{
   cursor: pointer;
 }
+
+.transform-rotate-45 {
+  transform: rotate(45deg);
+}
+
+.transform--rotate-45 {
+  transform: rotate(-45deg);
+}
+
+.absolute.inset-0 {
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}

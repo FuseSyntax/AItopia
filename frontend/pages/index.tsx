@@ -4,6 +4,8 @@ import GravityWords from '../components/GravityWords';
 import Marquee from "react-fast-marquee";
 import Image from 'next/image';
 import gameImage from "../public/img/game.webp"
+import BentoGrid from '../components/BentoGrid';
+import ScrollText from '../components/ScrollText';
 
 const Scene = dynamic(() => import('../components/Scene'), {
   ssr: false,
@@ -31,19 +33,19 @@ const Home = () => {
         <div className="absolute inset-0 -z-10">
           <Scene />
         </div>
-        <div className="relative overflow-x-hidden z-10 w-[70vw] text-center h-screen mx-auto flex flex-col items-center justify-center gap-7">
+        <div className="relative overflow-x-hidden z-10 sm:w-[70vw] text-center h-screen mx-auto flex flex-col items-center justify-center gap-7">
           <h1 className="uppercase text-8xl font-bold font-loos-wide">the progressors</h1>
           <p className="text-3xl font-aeroport text-gray-200">Upgrade yourself and everything around - be a trailblazer!</p>
           <Link className="bg-brown px-5 py-3 rounded-full w-44 hover:bg-opacity-90 transition-all" href="/tools">Try Now</Link>
         </div>
       </div>
-      <div className="w-[70vw] mt-[200px] mx-auto">
+      <div className="sm:w-[70vw] mt-[200px] mx-auto">
         <p className='px-32 text-center text-5xl font-loos-wide'>The Progressors is your everything everywhere all at once: {`Future's`} Crew all-in-one hub for entertainment, right within the app</p>
         <div className="w-full h-[500px] relative overflow-hidden z-10 border rounded-2xl mt-20">
           <GravityWords />
         </div>
       </div>
-      <div className="w-[70vw] mt-[200px] mx-auto mb-20">
+      <div className="sm:w-[70vw] mt-[200px] mx-auto mb-20">
         <p className='uppercase font-loos-wide text-6xl font-bold text-center px-60 text-orange'>pay for all services in one place</p>
         <p className='text-center text-xl font-aeroport mt-5'>Browse, manage, and settle your subscriptions through the Progressors app</p>
       </div>
@@ -52,21 +54,70 @@ const Home = () => {
         <Marquee direction="right">{marqueeItems}</Marquee>
         <Marquee>{marqueeItems}</Marquee>
       </div>
-      <div className="w-[70vw] mt-[200px] mx-auto mb-20">
-        <p className='uppercase font-loos-wide text-6xl font-bold text-center px-60 text-orange'>getting ready for release
+
+      <div className="relative ">
+        {/* Background Marquees */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-[60vh] left-[20vw] w-[200%] -translate-x-1/2 -translate-y-1/2 transform -rotate-12">
+            <Marquee gradient={false} className='bg-brown' speed={40} direction="right">
+              {Array(20).fill(
+                <div className="mx-8 flex items-center gap-4 p-3 font-loos-wide text-4xl font-bold text-white/10">
+                  <span className='text-black'> IN DEVELOPMENT</span>
+                </div>
+              )}
+            </Marquee>
+          </div>
+          <div className="absolute top-[40vh] left-[30vw] w-[200%] -translate-x-1/2 -translate-y-1/2 transform rotate-12 z-20">
+            <Marquee gradient={false} className='bg-brown' speed={40} direction="right">
+              {Array(20).fill(
+                <div className="mx-8 flex items-center gap-4 p-3 font-loos-wide text-4xl font-bold text-white/10">
+                  <span className='text-black'> IN DEVELOPMENT</span>
+                </div>
+              )}
+            </Marquee>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="sm:w-[70vw] mt-[200px] mx-auto mb-20 relative z-10">
+          <p className='uppercase font-loos-wide text-6xl font-bold text-center px-60 text-orange'>
+            getting ready for release
+          </p>
+          <div className="flex h-[500px] gap-10 mt-20">
+            {/* Content Boxes */}
+            <div className="w-full text-center gap-5 flex items-center justify-center backdrop-blur-lg bg-white/5 border border-white/10 flex-col rounded-3xl p-5">
+              <Image src={gameImage} alt='Game Image' className='size-72 object-contain' height={100} width={100} />
+              <span className="text-3xl font-loos-wide font-semibold">Quests and games</span>
+              <span className="text-xl font-loos-wide">Win and earn in-game currency — you can spend it on in-app subscriptions or character upgrades</span>
+            </div>
+            <div className="w-full text-center gap-5 flex items-center justify-center backdrop-blur-lg bg-white/5 border border-white/10 flex-col rounded-3xl p-5">
+              <Image src={gameImage} alt='Game Image' className='size-72 object-contain' height={100} width={100} />
+              <span className="text-3xl font-loos-wide font-semibold">Quests and games</span>
+              <span className="text-xl font-loos-wide">Win and earn in-game currency — you can spend it on in-app subscriptions or character upgrades</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div className="md:w-[70vw] mt-[200px] mx-auto mb-20 relative z-10">
+        <p className='uppercase font-loos-wide text-6xl font-bold text-center px-60 text-orange'>
+          network is your pass into the progressors world
         </p>
 
-        <div className="flex h-[500px] gap-10 mt-20">
-          <div className="w-full flex items-center justify-center backdrop-blur-lg bg-white/5 border border-white/10 flex-col rounded-3xl p-5">
-            <Image src={gameImage} alt='Game Image' height={100} width={100} />
-            <span>Quests and games</span>
-            <span>Win and earn in-game currency — you can spend it on in-app subscriptions or character upgrades</span>
-          </div>
-          <div className="w-full flex items-center justify-center backdrop-blur-lg bg-white/5 border border-white/10 flex-col rounded-3xl p-5">
-            <Image src={gameImage} alt='Game Image' height={100} width={100} />
-            <span>Quests and games</span>
-            <span>Win and earn in-game currency — you can spend it on in-app subscriptions or character upgrades</span>
-          </div>
+        <p className="text-center px-44 mt-5 font-aeroport text-2xl">We’ve compiled everything necessary for you to communicate and browse the web, free of ads and spam.</p>
+        <div className="md:w-[70vw] mt-20">
+          <BentoGrid />
+        </div>
+      </div>
+
+
+
+
+      <div className="bg-orange h-screen">
+        <div className="md:w-[70vw] mt-[200px] mx-auto mb-20  relative z-10">
+          <p className='uppercase font-loos-wide text-6xl font-bold text-center px-60'>and the thing is...</p>
+          <ScrollText />
         </div>
       </div>
 
