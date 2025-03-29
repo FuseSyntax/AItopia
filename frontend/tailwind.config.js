@@ -5,6 +5,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      backdropBlur: {
+        lg: '16px',
+      },
       colors: {
         'light-gray': '#F7F7F7',
         'orange': '#FFB22C',
