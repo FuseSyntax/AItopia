@@ -66,3 +66,49 @@ svg g{
   right: 0;
   bottom: 0;
 }
+
+@keyframes gradient-flow {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-gradient-flow {
+  animation: gradient-flow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.drop-shadow-orange-glow {
+  filter: drop-shadow(0 0 8px rgba(255, 165, 0, 0.5));
+}
+
+.ease-\[cubic-bezier\(0\.68\,_-0\.55\,_0\.265\,_1\.55\)\] {
+  transition-timing-function: cubic-bezier(0.68,-0.55,0.265,1.55);
+}
+
+
+.footer-link {
+  @apply text-white/80 hover:text-orange transition-colors font-aeroport text-lg;
+}
+
+.social-icon {
+  @apply p-2 rounded-lg bg-white/5 border border-white/10 text-white/80 hover:text-orange hover:border-orange/20 transition-all;
+}
+
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+

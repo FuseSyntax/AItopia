@@ -1,20 +1,93 @@
-import React from 'react'
-import BrandLogo from "../public/img/logo-white.png"
-import Image from 'next/image'
-import { Menu } from 'lucide-react';
-
+import React, { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Menu, X } from 'lucide-react';
+import BrandLogo from "../public/img/logo-white.png";
 
 const Navbar = () => {
-  return (
-    <div className='flex items-center mt-5  justify-between sm:w-[70vw] bg-transparent mx-auto absolute z-10 left-0 right-0'>
-      <div className="h-14">
-      <Image src={BrandLogo} alt="Brand Logo" width={100} height={100} />
-      </div>
-      <div className="bg-custom-black text-white rounded-xl">
-        <Menu className='p-2 size-14' />
-      </div>
-    </div>
-  )
-}
+  const [isOpen, setIsOpen] = useState(false);
 
-export default Navbar
+  const navigation = [
+    { name: 'About', href: '/about' },
+    { name: 'How to Connect', href: '/connect' },
+    { name: 'AI Tools', href: '/tools' },
+  ];
+
+  return (
+    <nav className="w-full fixed top-0 z-50 backdrop-blur-lg border-b border-white/10">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 max-w-[70vw] mx-auto">
+          {/* Logo */}
+          <Link href="/" className="flex-shrink-0">
+            <Image
+              src={BrandLogo}
+              alt="AItopia Logo"
+              className="h-12 w-auto"
+              width={200}
+              height={80}
+            />
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:block">
+            <div className="flex space-x-8">
+              {navigation.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="font-loos-wide text-white/80 hover:text-orange px-3 py-2 rounded-xl 
+                             transition-all duration-300 hover:bg-white/5 group"
+                >
+                  {item.name}
+                  <div className="h-0.5 bg-orange scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2 rounded-xl text-white hover:bg-white/10 transition-colors"
+            >
+              <Menu className="h-8 w-8" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <div className={`md:hidden fixed top-0 right-0 h-full w-64 bg-custom-black/95 backdrop-blur-xl
+                       transform ${isOpen ? 'translate-x-0' : 'translate-x-full'} 
+                       transition-transform duration-300 ease-in-out border-l border-white/10`}>
+        <div className="flex flex-col h-full">
+          <div className="flex justify-end p-4">
+            <button
+              onClick={() => setIsOpen(false)}
+              className="p-2 rounded-xl text-white hover:bg-white/10"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+
+          <div className="flex flex-col px-4 space-y-4">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={() => setIsOpen(false)}
+                className="font-loos-wide text-white/80 hover:text-orange px-4 py-3 rounded-xl
+                           transition-colors duration-200 hover:bg-white/5"
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;

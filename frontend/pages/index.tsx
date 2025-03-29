@@ -39,14 +39,14 @@ const Home = () => {
           <Link className="bg-brown px-5 py-3 rounded-full w-44 hover:bg-opacity-90 transition-all" href="/tools">Try Now</Link>
         </div>
       </div>
-      <div className="sm:w-[70vw] mt-[200px] mx-auto">
+      <div className="sm:w-[70vw] mt-[200px] h-screen mx-auto">
         <p className='px-32 text-center text-5xl font-loos-wide'>The Progressors is your everything everywhere all at once: {`Future's`} Crew all-in-one hub for entertainment, right within the app</p>
         <div className="w-full h-[500px] relative overflow-hidden z-10 border rounded-2xl mt-20">
           <GravityWords />
         </div>
       </div>
-      <div className="sm:w-[70vw] mt-[200px] mx-auto mb-20">
-        <p className='uppercase font-loos-wide text-6xl font-bold text-center px-60 text-orange'>pay for all services in one place</p>
+      <div className="sm:w-[70vw] mt-[50px] mx-auto mb-20">
+        <p className='uppercase font-lo3s-wide text-6xl font-bold text-center px-60 text-orange'>pay for all services in one place</p>
         <p className='text-center text-xl font-aeroport mt-5'>Browse, manage, and settle your subscriptions through the Progressors app</p>
       </div>
       <div className="flex gap-5 flex-col">
@@ -79,7 +79,7 @@ const Home = () => {
         </div>
 
         {/* Content */}
-        <div className="sm:w-[70vw] mt-[200px] mx-auto mb-20 relative z-10">
+        <div className="sm:w-[70vw] mt-[250px] mx-auto mb-20 relative z-10">
           <p className='uppercase font-loos-wide text-6xl font-bold text-center px-60 text-orange'>
             getting ready for release
           </p>
@@ -100,7 +100,7 @@ const Home = () => {
       </div>
 
 
-      <div className="md:w-[70vw] mt-[200px] mx-auto mb-20 relative z-10">
+      <div className="md:w-[70vw] mt-[250px] mx-auto mb-20 relative z-10">
         <p className='uppercase font-loos-wide text-6xl font-bold text-center px-60 text-orange'>
           network is your pass into the progressors world
         </p>
@@ -114,14 +114,58 @@ const Home = () => {
 
 
 
-      <div className="bg-orange h-screen">
-        <div className="md:w-[70vw] mt-[200px] mx-auto mb-20  relative z-10">
-          <p className='uppercase font-loos-wide text-6xl font-bold text-center px-60'>and the thing is...</p>
-          <ScrollText />
-        </div>
+      <div className="md:w-[70vw] mt-[100px] mx-auto relative z-10">
+        {/* <p className='uppercase font-loos-wide text-6xl font-bold text-center px-60'>and the thing is...</p> */}
+        <ScrollText />
       </div>
 
+      {/* // Add this section before the closing </div> of the main container */}
+      <div className="md:w-[70vw] mt-[200px] mx-auto mb-40 relative z-10">
+        <div className="bg-orange/10 backdrop-blur-lg border border-orange/20 rounded-[40px] p-16">
+          <h2 className="uppercase font-loos-wide text-7xl font-bold text-center mb-20 text-orange">
+            FAQ
+          </h2>
 
+          <div className="grid gap-12">
+            {/* FAQ Item 1 */}
+            <div className="group relative overflow-hidden">
+              <div className="transform transition-all duration-500 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)] 
+          bg-white/5 border border-white/10 rounded-3xl p-8 group-hover:bg-white/10">
+                <h3 className="text-3xl font-loos-wide font-bold text-orange mb-4">
+                  How can I connect the Progressors?
+                </h3>
+              </div>
+            </div>
+
+            {/* FAQ Item 2 */}
+            <div className="group relative overflow-hidden">
+              <div className="transform transition-all duration-500 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)] 
+          bg-white/5 border border-white/10 rounded-3xl p-8 group-hover:bg-white/10">
+                <h3 className="text-3xl font-loos-wide font-bold text-orange mb-4">
+                  What is included in the Progressors?
+                </h3>
+              </div>
+            </div>
+
+            {/* FAQ Item 3 */}
+            <div className="group relative overflow-hidden">
+              <div className="transform transition-all duration-500 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)] 
+          bg-white/5 border border-white/10 rounded-3xl p-8 group-hover:bg-white/10">
+                <h3 className="text-3xl font-loos-wide font-bold text-orange mb-4">
+                  How much it costs?
+                </h3>
+                <p className="text-xl font-aeroport text-white/80 leading-normal">
+                  Only 8$ per month for communication and entertainment in the application.
+                  <span className="block mt-3">
+                    There you can also connect additional communication services and subscriptions,
+                    as well as pay for foreign services for a fee.
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
     </div>
   );
