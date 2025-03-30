@@ -8,9 +8,14 @@ AItopia/
 │   │   ├── _app.tsx
 │   │   ├── index.tsx
 │   │   ├── about.tsx
+│   │   ├── comingsoon.tsx
+│   │   ├── privacy.tsx
+│   │   ├── terms.tsx
+│   │   ├── tools.tsx
 │   │   ├── contact.tsx
+│   │   ├── 404.tsx
 │   │   └── tools/
-│   │       ├── bg-remove.tsx
+│   │       ├── removebg.tsx
 │   │       └── add-subtitle.tsx
 │   ├── components/
 │   │   ├── Layout.tsx

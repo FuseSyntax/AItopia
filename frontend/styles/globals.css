@@ -48,7 +48,7 @@ body {
   overflow-x: hidden;
 }
 
-svg g{
+svg g {
   cursor: pointer;
 }
 
@@ -68,8 +68,13 @@ svg g{
 }
 
 @keyframes gradient-flow {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .animate-gradient-flow {
@@ -81,7 +86,7 @@ svg g{
 }
 
 .ease-\[cubic-bezier\(0\.68\,_-0\.55\,_0\.265\,_1\.55\)\] {
-  transition-timing-function: cubic-bezier(0.68,-0.55,0.265,1.55);
+  transition-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 
@@ -95,8 +100,15 @@ svg g{
 
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
 }
 
 .animate-float {
@@ -104,11 +116,39 @@ svg g{
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+@keyframes progress {
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+.animate-progress {
+  animation: progress 2s ease-in-out infinite;
+}
+
+.range-orange::-webkit-slider-thumb {
+  @apply bg-orange rounded-full w-5 h-5 cursor-pointer appearance-none;
+}
+
+.range-orange::-moz-range-thumb {
+  @apply bg-orange rounded-full w-5 h-5 cursor-pointer border-none;
+}
