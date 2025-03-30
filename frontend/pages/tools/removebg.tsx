@@ -1,4 +1,3 @@
-// pages/tools/removebg.tsx
 import { useState } from 'react';
 import { Upload, ImageDown, Wand2, Download, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -13,7 +12,7 @@ const RemoveBG = () => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       
-      // Preview the selected image
+      // Display a preview of the selected image
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target?.result) {
@@ -22,16 +21,18 @@ const RemoveBG = () => {
       };
       reader.readAsDataURL(file);
 
-      // Prepare form data for API upload
+      // Prepare form data to send to the backend
       const formData = new FormData();
       formData.append('image', file);
 
       setIsProcessing(true);
       try {
-        const response = await fetch('/api/tools/removebg', {
+        const response = await fetch('http://localhost:5000/api/tools/removebg', {
           method: 'POST',
           body: formData,
         });
+        
+
         if (response.ok) {
           const blob = await response.blob();
           const processedUrl = URL.createObjectURL(blob);
@@ -46,8 +47,20 @@ const RemoveBG = () => {
     }
   };
 
+  // Download handler: Create a temporary link and trigger click
+  const handleDownload = () => {
+    if (!processedImage) return;
+    const link = document.createElement('a');
+    link.href = processedImage;
+    link.download = 'processed-image.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="min-h-screen bg-custom-black">
+
       
       <main className="px-4 sm:px-0 sm:w-[90vw] md:w-[80vw] xl:w-[70vw] mx-auto py-20 space-y-16">
         {/* Navigation */}
@@ -115,9 +128,14 @@ const RemoveBG = () => {
                         src={processedImage} 
                         alt="Processed result" 
                         className="w-full h-full object-contain"
+                        width={100}
+                        height={100}
                       />
                     </div>
-                    <button className="w-full bg-orange text-black font-loos-wide py-4 rounded-xl hover:bg-orange/80 transition-all flex items-center justify-center gap-3">
+                    <button 
+                      onClick={handleDownload}
+                      className="w-full bg-orange text-black font-loos-wide py-4 rounded-xl hover:bg-orange/80 transition-all flex items-center justify-center gap-3"
+                    >
                       <Download className="w-5 h-5" />
                       Download Result
                     </button>
@@ -144,7 +162,7 @@ const RemoveBG = () => {
             <FeatureStep
               number="2"
               title="AI Processing"
-              description="Our backend uses AI to remove the background automatically"
+              description="Our backend AI agent removes the background automatically"
             />
             <FeatureStep
               number="3"
@@ -154,7 +172,6 @@ const RemoveBG = () => {
           </div>
         </div>
       </main>
-
     </div>
   );
 };
