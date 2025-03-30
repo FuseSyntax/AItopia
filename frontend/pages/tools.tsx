@@ -1,5 +1,3 @@
-// pages/tools.tsx
-import Footer from '../components/Footer';
 import { Paintbrush, Code2, BrainCircuit, Video, Music, BookText, Speech, Bot, Lock, ImageDown } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -9,68 +7,85 @@ const ToolsPage = () => {
   
   const tools = [
     {
+      name: 'RemoveBG',
+      category: 'Image',
+      icon: <ImageDown className="w-8 h-8" />,
+      description: 'Instantly remove backgrounds from images',
+      link: '/tools/removebg'
+    },
+    {
       name: 'Artisan AI',
       category: 'Generative AI',
       icon: <Paintbrush className="w-8 h-8" />,
       description: 'Transform text prompts into stunning digital artwork',
+      link: '/comingsoon'
     },
     {
       name: 'Code Pilot',
       category: 'Development',
       icon: <Code2 className="w-8 h-8" />,
       description: 'AI-powered code completion and debugging assistant',
+      link: '/comingsoon'
     },
     {
       name: 'NeuroChat',
       category: 'Productivity',
       icon: <BrainCircuit className="w-8 h-8" />,
       description: 'Context-aware intelligent chatbot with memory',
+      link: '/comingsoon'
     },
     {
       name: 'Motion Forge',
       category: 'Video',
       icon: <Video className="w-8 h-8" />,
       description: 'Automated video editing and scene generation',
+      link: '/comingsoon'
     },
     {
       name: 'Symphony AI',
       category: 'Audio',
       icon: <Music className="w-8 h-8" />,
       description: 'AI music composition and sound design tool',
+      link: '/comingsoon'
     },
     {
       name: 'Linguo',
       category: 'Writing',
       icon: <BookText className="w-8 h-8" />,
       description: 'Advanced content generation and rewriting',
+      link: '/comingsoon'
     },
     {
       name: 'VoiceCraft',
       category: 'Audio',
       icon: <Speech className="w-8 h-8" />,
       description: 'Real-time voice cloning and modulation',
+      link: '/tools/voicecraft'
     },
     {
       name: 'PixelGen',
       category: 'Generative AI',
       icon: <ImageDown className="w-8 h-8" />,
       description: 'Text-to-image generation with style control',
+      link: '/comingsoon'
     },
     {
       name: 'AutoBot',
       category: 'Automation',
       icon: <Bot className="w-8 h-8" />,
       description: 'Workflow automation with natural language',
+      link: '/comingsoon'
     },
     {
       name: 'CipherGuard',
       category: 'Security',
       icon: <Lock className="w-8 h-8" />,
       description: 'AI-powered cybersecurity threat detection',
+      link: '/comingsoon'
     }
   ];
 
-  const categories = ['all', 'Generative AI', 'Development', 'Productivity', 'Video', 'Audio', 'Writing', 'Security'];
+  const categories = ['all', 'Generative AI', 'Development', 'Productivity', 'Image', 'Video', 'Audio', 'Writing', 'Security'];
 
   const filteredTools = selectedCategory === 'all' 
     ? tools 
@@ -119,7 +134,7 @@ const ToolsPage = () => {
               </div>
               <h3 className="font-loos-wide text-2xl text-white mb-3">{tool.name}</h3>
               <p className="font-aeroport text-white/80 mb-6">{tool.description}</p>
-              <Link href={"/comingsoon"} className='flex items-center gap-3'>
+              <Link href={tool.link} className='flex items-center gap-3'>
                 Try Now
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-up-right">
                   <path d="M7 7h10v10"/>
@@ -130,7 +145,6 @@ const ToolsPage = () => {
           ))}
         </div>
       </main>
-
     </div>
   );
 };

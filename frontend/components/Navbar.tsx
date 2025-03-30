@@ -8,9 +8,9 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const navigation = [
-    { name: 'About', href: '/about' },
-    { name: 'How to Connect', href: '/connect' },
     { name: 'AI Tools', href: '/tools' },
+    { name: 'About', href: '/about' },
+    { name: 'How to Connect', href: '/connect' }
   ];
 
   return (
@@ -49,7 +49,7 @@ const Navbar = () => {
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-xl text-white hover:bg-white/10 transition-colors"
+              className="p-2 rounded-xl text-white bg-black hover:bg-white/10 transition-colors"
             >
               <Menu className="h-8 w-8" />
             </button>
@@ -61,8 +61,8 @@ const Navbar = () => {
       <div className={`md:hidden fixed top-0 right-0 h-full w-64 bg-custom-black/95 backdrop-blur-xl
                        transform ${isOpen ? 'translate-x-0' : 'translate-x-full'} 
                        transition-transform duration-300 ease-in-out border-l border-white/10`}>
-        <div className="flex flex-col h-full">
-          <div className="flex justify-end p-4">
+        <div className="flex flex-col h-[] bg-custom-black">
+          <div className="flex justify-end p-4 bg-black">
             <button
               onClick={() => setIsOpen(false)}
               className="p-2 rounded-xl text-white hover:bg-white/10"
@@ -71,7 +71,7 @@ const Navbar = () => {
             </button>
           </div>
 
-          <div className="flex flex-col px-4 space-y-4">
+          <div className="flex flex-col px-4 space-y-4 bg-black h-[100vh]">
             {navigation.map((item) => (
               <Link
                 key={item.name}
