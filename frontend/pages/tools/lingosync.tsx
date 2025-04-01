@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Video, Languages, Captions, Download, ArrowLeft, Settings, Clock } from 'lucide-react';
 import Link from 'next/link';
 
@@ -6,21 +6,74 @@ const LingoSync = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [subtitles, setSubtitles] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [targetLanguage, setTargetLanguage] = useState('en');
+  const [targetLanguage, setTargetLanguage] = useState('en'); // default English; user can change
   const [fontSize, setFontSize] = useState(24);
-  const [showTranslation, setShowTranslation] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setVideoFile(file);
       setIsProcessing(true);
-      // Simulate processing
-      setTimeout(() => {
-        setIsProcessing(false);
-        setSubtitles(`1\n00:00:00,000 --> 00:00:05,000\nTranslated subtitle text here`);
-      }, 3000);
+
+      try {
+        // Step 1: Upload video to extract audio.
+        const videoFormData = new FormData();
+        videoFormData.append('video', file);
+        const uploadRes = await fetch('http://localhost:5000/api/tools/upload', {
+          method: 'POST',
+          body: videoFormData,
+        });
+        const uploadData = await uploadRes.json();
+        console.log('Audio path:', uploadData.audioPath);
+
+        // Step 2: Call the ASR endpoint with the extracted audio.
+        // For demonstration, re-using the same file.
+        const audioFormData = new FormData();
+        audioFormData.append('audio', file);
+        const asrRes = await fetch('http://localhost:5000/api/tools/asr', {
+          method: 'POST',
+          body: audioFormData,
+        });
+        const asrData = await asrRes.json();
+        console.log('ASR data:', asrData);
+        let transcript = asrData.text || JSON.stringify(asrData, null, 2);
+        console.log('Transcript before translation:', transcript);
+
+        // Step 3: If target language is not English, translate the transcript.
+        if (targetLanguage !== 'en') {
+          console.log('Translating transcript to:', targetLanguage);
+          const translationRes = await fetch('http://localhost:5000/api/tools/translate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ text: transcript, targetLanguage })
+          });
+          const translationData = await translationRes.json();
+          console.log('Translation data:', translationData);
+          transcript = translationData.translatedText || transcript;
+        }
+
+        // Set the subtitles (assumed to be in SRT format)
+        setSubtitles(transcript);
+      } catch (error) {
+        console.error('Error processing video:', error);
+      }
+      setIsProcessing(false);
     }
+  };
+
+  const handleDownloadSRT = () => {
+    const blob = new Blob([subtitles], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'subtitles.srt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -49,9 +102,9 @@ const LingoSync = () => {
         <div className="grid md:grid-cols-2 gap-12">
           {/* Input Section */}
           <div className="space-y-8">
-            <div className="backdrop-blur-lg bg-white/5 border border-white/10 rounded-3xl p-8">
+            <div className="backdrop-blur-lg h-full bg-white/5 border border-white/10 rounded-3xl p-8">
               <label className="cursor-pointer">
-                <div className="border-2 border-dashed border-white/20 rounded-3xl p-8 text-center hover:border-orange transition-all group">
+                <div className="border-2 border-dashed h-full flex items-center justify-center border-white/20 rounded-3xl p-8 text-center hover:border-orange transition-all group">
                   <div className="space-y-6">
                     <Video className="w-16 h-16 mx-auto text-orange" />
                     <div className="space-y-2">
@@ -72,88 +125,6 @@ const LingoSync = () => {
                 </div>
               </label>
             </div>
-
-            {/* Language Settings */}
-            <div className="backdrop-blur-lg bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6">
-              <h2 className="font-loos-wide text-2xl text-orange">Language Settings</h2>
-              
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="font-aeroport text-white/80">Source Language</label>
-                  <select
-                    className="w-full bg-white/5 border border-white/10 rounded-xl p-4 focus:outline-none focus:border-orange"
-                    defaultValue="auto"
-                  >
-                    <option value="auto">Auto-detect</option>
-                    <option value="en">English</option>
-                    <option value="es">Spanish</option>
-                    <option value="fr">French</option>
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="font-aeroport text-white/80">Target Language</label>
-                  <select
-                    value={targetLanguage}
-                    onChange={(e) => setTargetLanguage(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl p-4 focus:outline-none focus:border-orange"
-                  >
-                    <option value="en">English</option>
-                    <option value="es">Spanish</option>
-                    <option value="fr">French</option>
-                    <option value="de">German</option>
-                    <option value="ja">Japanese</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <input
-                  type="checkbox"
-                  id="show-translation"
-                  checked={showTranslation}
-                  onChange={(e) => setShowTranslation(e.target.checked)}
-                  className="w-5 h-5 text-orange rounded focus:ring-orange"
-                />
-                <label htmlFor="show-translation" className="font-aeroport text-white/80">
-                  Show translated subtitles
-                </label>
-              </div>
-            </div>
-
-            {/* Subtitle Customization */}
-            <div className="backdrop-blur-lg bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6">
-              <h2 className="font-loos-wide text-2xl text-orange">Subtitle Styling</h2>
-              
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="font-aeroport text-white/80">Font Size</label>
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="range"
-                      min="16"
-                      max="48"
-                      value={fontSize}
-                      onChange={(e) => setFontSize(Number(e.target.value))}
-                      className="w-full range-orange"
-                    />
-                    <span className="font-loos-wide">{fontSize}px</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="font-aeroport text-white/80">Text Color</label>
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="color"
-                      defaultValue="#ffffff"
-                      className="w-12 h-12 rounded-lg cursor-pointer bg-white/5 border border-white/10"
-                    />
-                    <span className="font-aeroport text-white/80">White</span>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Output Section */}
@@ -161,7 +132,7 @@ const LingoSync = () => {
             {isProcessing ? (
               <div className="h-full flex flex-col items-center justify-center space-y-6">
                 <Settings className="w-16 h-16 animate-spin text-orange" />
-                <p className="font-loos-wide text-2xl text-white">Generating Subtitles...</p>
+                <p className="font-loos-wide text-2xl text-white">Processing Video...</p>
                 <div className="w-full bg-white/10 rounded-full h-2">
                   <div className="bg-orange h-2 rounded-full animate-progress" />
                 </div>
@@ -169,31 +140,24 @@ const LingoSync = () => {
             ) : (
               <>
                 <div className="aspect-video bg-white/5 border border-white/10 rounded-2xl overflow-hidden relative">
+                  <h3 className="font-loos-wide text-xl text-orange m-5">Video Preview</h3>
                   {videoFile && (
                     <video 
+                      ref={videoRef}
                       src={URL.createObjectURL(videoFile)} 
                       className="w-full h-full object-contain"
                       controls
                     />
                   )}
-                  {/* Subtitle Preview */}
-                  <div 
-                    className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-center"
-                    style={{
-                      fontSize: `${fontSize}px`,
-                      textShadow: '0 2px 4px rgba(0,0,0,0.8)'
-                    }}
-                  >
-                    <span className="bg-black/50 px-4 py-2 rounded-lg border border-orange/30">
-                      Preview subtitle text
-                    </span>
-                  </div>
+                  {/* Subtitle Overlay: displays current subtitle in sync with video */}
                 </div>
-
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="font-loos-wide text-xl text-orange">Generated Subtitles</h3>
-                    <button className="text-orange hover:text-orange/80 flex items-center gap-2">
+                    <button 
+                      onClick={handleDownloadSRT}
+                      className="text-orange hover:text-orange/80 flex items-center gap-2"
+                    >
                       <Download className="w-5 h-5" />
                       Download SRT
                     </button>
@@ -235,6 +199,8 @@ const LingoSync = () => {
     </div>
   );
 };
+
+
 
 const FeatureStep = ({ icon, title, description }: { 
   icon: React.ReactNode;
