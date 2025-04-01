@@ -1,4 +1,4 @@
-import { Paintbrush, Code2, BrainCircuit, Video, Music, BookText, Speech, Bot, Lock, ImageDown } from 'lucide-react';
+import { Paintbrush, Code2, BrainCircuit, Video, Music, BookText, Speech, Bot, Lock, ImageDown, Clapperboard } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -12,6 +12,13 @@ const ToolsPage = () => {
       icon: <ImageDown className="w-8 h-8" />,
       description: 'Instantly remove backgrounds from images',
       link: '/tools/removebg'
+    },
+    {
+      name: 'LingoSync',
+      category: 'Video',
+      icon: <Clapperboard className="w-8 h-8" />,
+      description: 'Add subtitle to the video',
+      link: '/tools/lingosync'
     },
     {
       name: 'Artisan AI',
@@ -53,7 +60,7 @@ const ToolsPage = () => {
       category: 'Writing',
       icon: <BookText className="w-8 h-8" />,
       description: 'Advanced content generation and rewriting',
-      link: '/comingsoon'
+      link: '/tools/linguo'
     },
     {
       name: 'VoiceCraft',

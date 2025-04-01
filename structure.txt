@@ -16,7 +16,9 @@ AItopia/
 │   │   ├── 404.tsx
 │   │   └── tools/
 │   │       ├── removebg.tsx
-│   │       └── add-subtitle.tsx
+│   │       └── lingoSync.tsx
+│   │       └── voicecraft.tsx
+│   │       └── linguo.tsx
 │   ├── components/
 │   │   ├── Layout.tsx
 │   │   ├── Navbar.tsx
