@@ -19,6 +19,7 @@ AItopia/
 │   │       └── lingoSync.tsx
 │   │       └── voicecraft.tsx
 │   │       └── linguo.tsx
+│   │       └── artrisanai.tsx
 │   ├── components/
 │   │   ├── Layout.tsx
 │   │   ├── Navbar.tsx

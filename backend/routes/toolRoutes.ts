@@ -12,6 +12,9 @@ const require = createRequire(import.meta.url);
 const router = Router();
 const upload = multer({ dest: 'uploads/' });
 
+const baseURL = process.env.API_BASE_URL || 'http://localhost:5000/api';
+
+
 // ----- Removebg Endpoint -----
 router.post('/removebg', upload.single('image'), async (req, res): Promise<void> => {
   if (!req.file) {
@@ -116,7 +119,7 @@ router.post('/upload', upload.single('video'), async (req, res) => {
     });
 });
 
-// ----- ASR Endpoint (updated with file deletion after 1 min on error) -----
+// ----- ASR Endpoint -----
 router.post('/asr', upload.single('audio'), async (req, res) => {
   if (!req.file) {
     res.status(400).json({ error: 'No audio file provided' });
@@ -137,7 +140,6 @@ router.post('/asr', upload.single('audio'), async (req, res) => {
         timeout: 30000
       }
     );
-    // Delete file immediately on success
     fs.unlinkSync(audioPath);
     res.json(response.data);
   } catch (error: any) {
@@ -153,7 +155,7 @@ router.post('/asr', upload.single('audio'), async (req, res) => {
   }
 });
 
-// ----- Translation Endpoint (single version) -----
+// ----- Translation Endpoint -----
 router.post('/translate', async (req, res) => {
   const { text, targetLanguage } = req.body;
   if (!text || !targetLanguage) {
@@ -193,5 +195,100 @@ function formatTimestamp(seconds: number) {
   date.setSeconds(seconds);
   return date.toISOString().substr(11, 12).replace('.', ',');
 }
+
+// ----- Image Generation Endpoint -----
+router.post('/generate-art', async (req, res) => {
+  const { prompt, style, creativity, aspectRatio } = req.body;
+  if (!prompt) {
+    return res.status(400).json({ error: 'Prompt is required' });
+  }
+  try {
+    // Compute width and height based on aspect ratio (base width = 512)
+    const width = 512;
+    let height = 512;
+    if (aspectRatio === '16:9') {
+      height = Math.round(width * 9 / 16);
+    } else if (aspectRatio === '9:16') {
+      height = Math.round(width * 16 / 9);
+    } else if (aspectRatio === '4:3') {
+      height = Math.round(width * 3 / 4);
+    }
+    
+    // Compose the input string.
+    const input = `${prompt}, art style: ${style}, creativity: ${creativity}%, aspect ratio: ${aspectRatio}`;
+    console.log("Input to generate-art:", input);
+    
+    // Request 2 images from the model. We use responseType: 'arraybuffer' to capture binary data.
+    const response = await axios.post(
+      'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2',
+      { 
+        inputs: input,
+        parameters: { num_images_per_prompt: 2, width, height }
+      },
+      {
+        headers: { Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}` },
+        timeout: 60000,
+        responseType: 'arraybuffer'
+      }
+    );
+    
+    // Check the Content-Type header to decide how to parse the response.
+    const contentType = response.headers['content-type'];
+    let images: string[] = [];
+    
+    if (contentType && contentType.includes('application/json')) {
+      // If the response is JSON, parse it.
+      const jsonData = JSON.parse(Buffer.from(response.data).toString());
+      console.log("JSON response data:", jsonData);
+      if (Array.isArray(jsonData)) {
+        images = jsonData.map((img: any) => {
+          let imageData = img.generated_image || img;
+          if (typeof imageData === 'string') {
+            if (!imageData.startsWith('data:') && !imageData.startsWith('http')) {
+              imageData = `data:image/png;base64,${imageData}`;
+            }
+            return imageData;
+          }
+          return '';
+        }).filter((url: string) => url !== '');
+      } else if (jsonData.generated_image) {
+        let imageData = jsonData.generated_image;
+        if (typeof imageData === 'string') {
+          if (!imageData.startsWith('data:') && !imageData.startsWith('http')) {
+            imageData = `data:image/png;base64,${imageData}`;
+          }
+          images = [imageData];
+        }
+      }
+    } else if (contentType && contentType.includes('image/')) {
+      // If the response is an image, convert it to a base64 string.
+      const base64Image = Buffer.from(response.data).toString('base64');
+      images = [`data:${contentType};base64,${base64Image}`];
+    } else {
+      console.error("Unexpected content-type:", contentType);
+    }
+    
+    // If only one image is returned, duplicate it.
+    if (images.length === 1) {
+      images.push(images[0]);
+    }
+    
+    if (images.length < 1) {
+      console.error('Not enough images returned:', images);
+      return res.status(500).json({ error: 'Image generation failed: not enough images returned' });
+    }
+    
+    res.json({ images });
+  } catch (error: any) {
+    if (error.response && error.response.status === 503) {
+      console.error('Hugging Face API is unavailable. Check your API quota or try again later.');
+      return res.status(503).json({ error: 'Service Unavailable: Hugging Face API is down or over quota.' });
+    }
+    console.error('Image generation error:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Image generation failed' });
+  }
+});
+
+
 
 export default router;
