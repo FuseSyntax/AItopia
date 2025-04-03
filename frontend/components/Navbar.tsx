@@ -10,7 +10,9 @@ const Navbar = () => {
   const navigation = [
     { name: 'AI Tools', href: '/tools' },
     { name: 'About', href: '/about' },
-    { name: 'How to Connect', href: '/connect' }
+    { name: 'How to Connect', href: '/connect' },
+    { name: 'Login', href: '/login' },
+    { name: 'Dashboard', href: '/dashboard' }
   ];
 
   return (

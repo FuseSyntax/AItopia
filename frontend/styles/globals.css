@@ -152,3 +152,8 @@ svg g {
 .range-orange::-moz-range-thumb {
   @apply bg-orange rounded-full w-5 h-5 cursor-pointer border-none;
 }
+
+
+.recharts-responsive-container{
+  height: 250px !important;
+}

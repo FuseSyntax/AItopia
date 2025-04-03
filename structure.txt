@@ -12,6 +12,8 @@ AItopia/
 │   │   ├── privacy.tsx
 │   │   ├── terms.tsx
 │   │   ├── tools.tsx
+│   │   ├── login.tsx
+│   │   ├── dashboard.tsx
 │   │   ├── contact.tsx
 │   │   ├── 404.tsx
 │   │   └── tools/
@@ -24,7 +26,6 @@ AItopia/
 │   │   ├── Layout.tsx
 │   │   ├── Navbar.tsx
 │   │   ├── Footer.tsx
-│   │   └── ToolCard.tsx
 │   └── styles/
 │       └── globals.css
 ├── backend/
