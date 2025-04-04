@@ -1,4 +1,7 @@
-import 'dotenv/config';
+// server.ts
+import dotenv from 'dotenv';
+dotenv.config(); // Load environment variables before any other import
+
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';

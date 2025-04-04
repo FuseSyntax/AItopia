@@ -25,7 +25,7 @@ const ToolsPage = () => {
       category: 'Generative AI',
       icon: <Paintbrush className="w-8 h-8" />,
       description: 'Transform text prompts into stunning digital artwork',
-      link: '/comingsoon'
+      link: '/tools/artrisanai'
     },
     {
       name: 'Code Pilot',
