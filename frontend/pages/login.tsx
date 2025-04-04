@@ -1,14 +1,49 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, User, Github, Sparkles, Rocket, Fingerprint } from 'lucide-react';
+import { useRouter } from 'next/router';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
-  const [hoverEffect, setHoverEffect] = useState(false);
+  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const { login } = useAuth(); // Use login function from context
+  const router = useRouter();
+  const [error, setError] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    // Adjust the endpoint URL based on where your Express server is running.
+    const endpoint = activeTab === 'login'
+      ? 'http://localhost:5000/api/users/login'
+      : 'http://localhost:5000/api/users/signup';
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || 'An error occurred');
+        return;
+      }
+      // Save token via AuthContext
+      login(data.token);
+      router.push('/dashboard');
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-custom-black relative overflow-hidden">
-      {/* Animated background elements */}
+      {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
           animate={{ 
@@ -19,7 +54,6 @@ const Login = () => {
           transition={{ duration: 20, repeat: Infinity }}
           className="absolute w-96 h-96 bg-gradient-to-r from-orange/10 to-amber-500/10 blur-3xl -top-48 -left-48 rounded-full"
         />
-        
         <motion.div
           animate={{ 
             scale: [1, 1.2, 1],
@@ -53,25 +87,11 @@ const Login = () => {
             </p>
           </div>
 
-          {/* Animated Tabs */}
+          {/* Tabs */}
           <div className="flex gap-4 justify-center my-8 relative">
-            <div className="absolute inset-0 flex justify-center">
-              <motion.div
-                className="bg-orange/20 absolute -z-10 top-1/2 -translate-y-1/2 h-12 rounded-xl"
-                style={{ width: '110%' }}
-                animate={{
-                  opacity: hoverEffect ? 0.3 : 0.1,
-                  scale: hoverEffect ? 1.05 : 1
-                }}
-                transition={{ type: 'spring' }}
-              />
-            </div>
-            
             {['login', 'signup'].map((tab) => (
               <motion.button
                 key={tab}
-                onHoverStart={() => setHoverEffect(true)}
-                onHoverEnd={() => setHoverEffect(false)}
                 onClick={() => setActiveTab(tab as 'login' | 'signup')}
                 className={`px-8 py-3 rounded-xl font-loos-wide relative overflow-hidden ${
                   activeTab === tab
@@ -80,85 +100,63 @@ const Login = () => {
                 }`}
               >
                 {tab === 'login' ? 'Secure Login' : 'Power Signup'}
-                {activeTab === tab && (
-                  <motion.div
-                    className="absolute inset-0 bg-white/10"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  />
-                )}
               </motion.button>
             ))}
           </div>
 
           {/* Form */}
-          <motion.form 
-            className="space-y-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <AnimatePresence mode='wait'>
-              {activeTab === 'signup' && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="space-y-2 overflow-hidden"
-                >
-                  <label className="font-aeroport text-white/80 ml-1">Full Name</label>
-                  <motion.div 
-                    whileHover={{ scale: 1.02 }}
-                    className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl p-4"
-                  >
-                    <User className="w-5 h-5 text-orange" />
-                    <input
-                      type="text"
-                      placeholder="Elon Musk"
-                      className="w-full bg-transparent focus:outline-none placeholder-white/30"
-                    />
-                    <Sparkles className="w-5 h-5 text-orange/50" />
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {activeTab === 'signup' && (
+              <div className="space-y-2">
+                <label className="font-aeroport text-white/80 ml-1">Full Name</label>
+                <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl p-4">
+                  <User className="w-5 h-5 text-orange" />
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Elon Musk"
+                    className="w-full bg-transparent focus:outline-none placeholder-white/30"
+                    onChange={handleChange}
+                    value={form.name}
+                  />
+                  <Sparkles className="w-5 h-5 text-orange/50" />
+                </div>
+              </div>
+            )}
             <div className="space-y-2">
               <label className="font-aeroport text-white/80 ml-1">Email</label>
-              <motion.div 
-                whileHover={{ scale: 1.02 }}
-                className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl p-4"
-              >
+              <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl p-4">
                 <Mail className="w-5 h-5 text-orange" />
                 <input
                   type="email"
+                  name="email"
                   placeholder="commander@progressors.space"
                   className="w-full bg-transparent focus:outline-none placeholder-white/30"
+                  onChange={handleChange}
+                  value={form.email}
                 />
                 <Fingerprint className="w-5 h-5 text-orange/50" />
-              </motion.div>
+              </div>
             </div>
-
             <div className="space-y-2">
               <label className="font-aeroport text-white/80 ml-1">Password</label>
-              <motion.div 
-                whileHover={{ scale: 1.02 }}
-                className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl p-4"
-              >
+              <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl p-4">
                 <Lock className="w-5 h-5 text-orange" />
                 <input
                   type="password"
+                  name="password"
                   placeholder="••••••••"
                   className="w-full bg-transparent focus:outline-none placeholder-white/30"
+                  onChange={handleChange}
+                  value={form.password}
                 />
-                <div className="flex gap-1">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="w-1 h-3 bg-orange/50 rounded-full" />
-                  ))}
-                </div>
-              </motion.div>
+              </div>
             </div>
 
+            {error && <p className="text-red-400 text-center">{error}</p>}
+
             <motion.button
+              type="submit"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="w-full bg-gradient-to-br from-orange to-amber-500 text-black font-loos-wide py-4 rounded-xl relative overflow-hidden group"
@@ -166,42 +164,8 @@ const Login = () => {
               <span className="relative z-10">
                 {activeTab === 'login' ? 'Quantum Sign In' : 'Create Warp Drive'}
               </span>
-              <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
             </motion.button>
-
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/10" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="px-4 bg-white/5 text-sm text-white/60 font-aeroport">
-                  Hyper-Speed Access
-                </span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {['Github', 'Google'].map((provider, i) => (
-                <motion.button
-                  key={provider}
-                  whileHover={{ y: -2 }}
-                  className="flex items-center justify-center gap-3 bg-white/5 py-3 rounded-xl hover:bg-white/10 transition-all"
-                >
-                  {i === 0 ? (
-                    <Github className="w-5 h-5" />
-                  ) : (
-                    <svg className="w-5 h-5" viewBox="0 0 24 24">
-                      <path
-                        fill="currentColor"
-                        d="M12.545 10.239v3.821h5.445c-.712 2.315-2.647 3.972-5.445 3.972a6.033 6.033 0 110-12.064c1.498 0 2.866.549 3.921 1.453l2.814-2.814A9.969 9.969 0 0012.545 2C7.021 2 2.545 6.477 2.545 12s4.476 10 10 10c5.523 0 10-4.477 10-10a9.982 9.982 0 00-2.167-6.275l-3.061 2.367z"
-                      />
-                    </svg>
-                  )}
-                  <span className="font-loos-wide">{provider}</span>
-                </motion.button>
-              ))}
-            </div>
-          </motion.form>
+          </form>
         </motion.div>
       </main>
     </div>

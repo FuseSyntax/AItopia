@@ -3,16 +3,21 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 import BrandLogo from "../public/img/logo-white.png";
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAuth();
 
+  // Navigation items. Login is only shown if user is not logged in;
+  // Dashboard is shown only if user is logged in.
   const navigation = [
     { name: 'AI Tools', href: '/tools' },
     { name: 'About', href: '/about' },
     { name: 'How to Connect', href: '/connect' },
-    { name: 'Login', href: '/login' },
-    { name: 'Dashboard', href: '/dashboard' }
+    ...(!user
+      ? [{ name: 'Login', href: '/login' }]
+      : [{ name: 'Dashboard', href: '/dashboard' }])
   ];
 
   return (
@@ -37,8 +42,7 @@ const Navbar = () => {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="font-loos-wide text-white/80 hover:text-orange px-3 py-2 rounded-xl 
-                             transition-all duration-300 hover:bg-white/5 group"
+                  className="font-loos-wide text-white/80 hover:text-orange px-3 py-2 rounded-xl transition-all duration-300 hover:bg-white/5 group"
                 >
                   {item.name}
                   <div className="h-0.5 bg-orange scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
@@ -60,10 +64,8 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Menu */}
-      <div className={`md:hidden fixed top-0 right-0 h-full w-64 bg-custom-black/95 backdrop-blur-xl
-                       transform ${isOpen ? 'translate-x-0' : 'translate-x-full'} 
-                       transition-transform duration-300 ease-in-out border-l border-white/10`}>
-        <div className="flex flex-col h-[] bg-custom-black">
+      <div className={`md:hidden fixed top-0 right-0 h-full w-64 bg-custom-black/95 backdrop-blur-xl transform ${isOpen ? 'translate-x-0' : 'translate-x-full'} transition-transform duration-300 ease-in-out border-l border-white/10`}>
+        <div className="flex flex-col h-full">
           <div className="flex justify-end p-4 bg-black">
             <button
               onClick={() => setIsOpen(false)}
@@ -72,15 +74,13 @@ const Navbar = () => {
               <X className="h-6 w-6" />
             </button>
           </div>
-
-          <div className="flex flex-col px-4 space-y-4 bg-black h-[100vh]">
+          <div className="flex flex-col px-4 space-y-4 bg-black h-full">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className="font-loos-wide text-white/80 hover:text-orange px-4 py-3 rounded-xl
-                           transition-colors duration-200 hover:bg-white/5"
+                className="font-loos-wide text-white/80 hover:text-orange px-4 py-3 rounded-xl transition-colors duration-200 hover:bg-white/5"
               >
                 {item.name}
               </Link>

@@ -9,10 +9,11 @@ const Footer = () => {
         <div className="grid md:grid-cols-4 gap-8 mb-12">
           {/* Brand Section */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
+
+            <Link href="/" className="flex items-center gap-2">
               <Code2 className="text-orange w-8 h-8" />
               <span className="font-loos-wide text-2xl text-white uppercase">aitopia</span>
-            </div>
+            </Link>
             <p className="font-aeroport text-white/80 text-lg">
               Empowering innovation through AI-powered solutions
             </p>
@@ -47,9 +48,9 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="font-loos-wide text-white text-xl mb-4">Stay Updated</h3>
             <div className="flex gap-2">
-              <input 
-                type="email" 
-                placeholder="Enter your email" 
+              <input
+                type="email"
+                placeholder="Enter your email"
                 className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 flex-1 text-white placeholder-white/30 focus:outline-none focus:border-orange"
               />
               <button className="bg-orange text-black font-loos-wide px-6 py-3 rounded-xl hover:bg-orange/80 transition-all">
@@ -64,7 +65,7 @@ const Footer = () => {
           <div className="font-aeroport text-white/60 text-center md:text-left">
             © {new Date().getFullYear()} AItopia. All rights reserved.
           </div>
-          
+
           <div className="flex items-center gap-6">
             <Link href="/privacy" className="footer-link">Privacy Policy</Link>
             <Link href="/terms" className="footer-link">Terms of Service</Link>
