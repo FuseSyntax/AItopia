@@ -263,14 +263,7 @@ const LiveAnalytics = () => {
           ))}
         </div>
 
-        {/* Floating Status */}
-        <motion.div 
-          className="fixed bottom-8 right-8 backdrop-blur-xl bg-white/5 border border-white/10 rounded-full p-4 cursor-pointer"
-          animate={{ rotate: [0, 360], scale: [1, 1.1] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-        >
-          <Server className="w-6 h-6 text-orange" />
-        </motion.div>
+
       </div>
     </div>
   );
