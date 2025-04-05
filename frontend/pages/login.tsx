@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, User, Github, Sparkles, Rocket, Fingerprint } from 'lucide-react';
 import { useRouter } from 'next/router';
@@ -8,12 +8,20 @@ const Login = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const { login } = useAuth(); // Use login function from context
-  const router = useRouter();
   const [error, setError] = useState('');
+  const { user } = useAuth();
+  const router = useRouter(); // Initialize router
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
+
+
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

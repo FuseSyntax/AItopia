@@ -1,6 +1,6 @@
-// server.ts
+// backend/server.ts
 import dotenv from 'dotenv';
-dotenv.config(); // Load environment variables before any other import
+dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
@@ -22,7 +22,6 @@ process.on('unhandledRejection', (reason, promise) => {
 app.use(cors());
 app.use(bodyParser.json());
 
-// Mount routes
 app.use('/api/tools', toolRoutes);
 app.use('/api/users', userRoutes);
 

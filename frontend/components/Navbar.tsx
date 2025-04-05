@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
-import BrandLogo from "../public/img/logo-white.png";
+import { Code2, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
@@ -25,15 +23,11 @@ const Navbar = () => {
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 max-w-[70vw] mx-auto">
           {/* Logo */}
-          <Link href="/" className="flex-shrink-0">
-            <Image
-              src={BrandLogo}
-              alt="AItopia Logo"
-              className="h-12 w-auto"
-              width={200}
-              height={80}
-            />
-          </Link>
+          <Link href="/" className="flex items-center gap-2">
+              <Code2 className="text-orange w-8 h-8" />
+              <span className="font-loos-wide text-2xl text-white uppercase">aitopia</span>
+            </Link>
+            
 
           {/* Desktop Navigation */}
           <div className="hidden md:block">

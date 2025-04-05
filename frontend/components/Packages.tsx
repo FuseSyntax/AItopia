@@ -4,7 +4,16 @@ import { Rocket, Crown, Gem, Zap, Sparkles, Wallet, BadgeCheck } from 'lucide-re
 const Packages = () => {
   const [activeTab, setActiveTab] = useState('tools');
   const [selectedPackage, setSelectedPackage] = useState('pro');
-  
+
+    // Get current date information
+    const currentDate = new Date();
+    const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    const formattedDate = lastDayOfMonth.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric'
+    });
+
   const packages = [
     {
       name: 'Starter',
@@ -135,7 +144,7 @@ const Packages = () => {
                       <span className="font-loos-wide">Next Payment</span>
                     </div>
                     <p className="font-aeroport text-white/80">
-                      $0.00 - April 30, 2024
+                      $0.00 - {formattedDate}
                     </p>
                   </div>
 

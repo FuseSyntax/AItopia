@@ -109,7 +109,7 @@ const OurMarquee = () => {
 
         {/* Marquee Tools */}
         <div className="space-y-8">
-          <Marquee gradientColor={[18, 18, 18]}>
+          <Marquee gradientColor={[18, 18, 18]} speed={35}>
             {[...tools, ...tools].map((tool, index) => (
               <Link href={tool.link} key={`${tool.name}-${index}`} className="ml-5 flex items-center gap-4 px-6 py-3 rounded-2xl bg-gradient-to-br from-white/5 to-white/2 border border-white/10 hover:border-orange/30 transition-all">
                 <div className="p-2 bg-orange/20 rounded-lg text-orange">
@@ -130,7 +130,7 @@ const OurMarquee = () => {
             ))}
           </Marquee>
 
-          <Marquee direction="right" gradientColor={[18, 18, 18]}>
+          <Marquee direction="right" gradientColor={[18, 18, 18]} speed={35}>
             {[...tools, ...tools].map((tool, index) => (
               <div key={`${tool.name}-reverse-${index}`} className="ml-5 flex items-center gap-4 px-6 py-3 rounded-2xl bg-gradient-to-br from-white/5 to-white/2 border border-white/10 hover:border-orange/30 transition-all">
                 <div className="p-2 bg-purple-400/20 rounded-lg text-purple-400">
@@ -146,7 +146,7 @@ const OurMarquee = () => {
             ))}
           </Marquee>
 
-          <Marquee gradientColor={[18, 18, 18]}>
+          <Marquee gradientColor={[18, 18, 18]} speed={35}>
             {[...tools, ...tools].map((tool, index) => (
               <div key={`${tool.name}-alt-${index}`} className="ml-5 flex items-center gap-4 px-6 py-3 rounded-2xl bg-gradient-to-br from-white/5 to-white/2 border border-white/10 hover:border-orange/30 transition-all">
                 <div className="p-2 bg-blue-400/20 rounded-lg text-blue-400">
