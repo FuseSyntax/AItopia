@@ -1,0 +1,208 @@
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Shield, User, Cloud, Clock, Upload } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { useRouter } from 'next/router';
+
+// Helpers for avatar
+const hashString = (str: string): number => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return hash;
+};
+
+const getColorFromHash = (hash: number): string => {
+  const hue = Math.abs(hash % 360);
+  return `hsl(${hue}, 70%, 50%)`;
+};
+
+const generateAvatarSVG = (email: string): string => {
+  const hash = hashString(email);
+  const size = 128;
+  const cells = 5;
+  const cellSize = size / cells;
+
+  const pattern: number[] = [];
+  for (let i = 0; i < cells * cells; i++) {
+    pattern.push((hash + i) % 2);
+  }
+
+  const color = getColorFromHash(hash);
+  const svgCells = pattern
+    .map((value, index) => {
+      if (value === 0) return null;
+      const x = (index % cells) * cellSize;
+      const y = Math.floor(index / cells) * cellSize;
+      return `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" fill="${color}" />`;
+    })
+    .filter(Boolean)
+    .join('');
+
+  return `
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+      <rect width="${size}" height="${size}" fill="#2D2D2D" />
+      ${svgCells}
+    </svg>
+  `;
+};
+
+type UserData = {
+  name: string;
+  lastLogin: string | null;
+  profileImage?: string | null;
+};
+
+export default function ProfileTab() {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState<UserData>({ name: '', lastLogin: null });
+
+  // Controlled inputs
+  const [name, setName] = useState('');
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+
+  
+  // Fetch profile on mount
+  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    (async () => {
+      const res = await fetch('http://localhost:5000/api/users/profile', {
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+      if (res.ok) {
+        const data: UserData = await res.json();
+        setUserData(data);
+        setName(data.name);
+      }
+      setLoading(false);
+    })();
+  }, [user, router]);
+
+  // Save changes
+  const handleSave = async () => {
+    setFeedback(null);
+    try {
+      const res = await fetch('http://localhost:5000/api/users/profile', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user!.token}`,
+        },
+        body: JSON.stringify({ name }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Update failed');
+      }
+      const updated: UserData = await res.json();
+      setUserData(updated);
+      setFeedback({ type: 'success', message: 'Profile updated!' });
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message });
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center py-20 text-white/50">Loading profile…</div>;
+  }
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h2 className="font-loos-wide text-3xl text-orange">Profile Settings</h2>
+        <div className="flex items-center gap-3 text-green-400">
+          <Shield className="w-5 h-5" />
+          <span>Security Status: Excellent</span>
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-8">
+        {/* Avatar & Edit Form */}
+        <div className="backdrop-blur-lg bg-white/5 border border-white/10 rounded-2xl p-6 space-y-6 lg:col-span-1">
+          <div className="relative group">
+            <div
+              className="w-32 h-32 rounded-full bg-orange/20 flex items-center justify-center mx-auto overflow-hidden"
+              dangerouslySetInnerHTML={{
+                __html: userData.email
+                  ? generateAvatarSVG(userData.email)
+                  : '<svg width="128" height="128" viewBox="0 0 128 128"><rect width="128" height="128" fill="#2D2D2D"/></svg>',
+              }}
+            />
+            <div className="absolute bottom-0 right-0 p-2 bg-white/10 rounded-full cursor-pointer hover:bg-orange/20 transition-all">
+              <Upload className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Name Input */}
+          <div className="space-y-2">
+            <label className="font-aeroport text-white/80">Full Name</label>
+            <input
+              value={name}
+              onChange={e => setName(e.target.value)}
+              className="w-full bg-white/10 p-3 rounded-xl focus:outline-none"
+            />
+          </div>
+
+          
+
+          {/* Save Button */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            className="w-full bg-orange py-3 rounded-xl text-black font-loos-wide mt-4"
+            onClick={handleSave}
+          >
+            Save Changes
+          </motion.button>
+
+          {/* Feedback */}
+          {feedback && (
+            <div className={`text-sm mt-2 ${feedback.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+              {feedback.message}
+            </div>
+          )}
+        </div>
+
+        {/* Read-Only Account Details */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="backdrop-blur-lg bg-white/5 border border-white/10 rounded-2xl p-6 space-y-6">
+            <h3 className="font-loos-wide text-xl">Account Details</h3>
+            <div className="grid md:grid-cols-2 gap-6">
+              {[
+                { label: 'Full Name', value: userData.name, icon: <User /> },
+                { label: 'Email', value: userData.email, icon: <Cloud /> },
+                {
+                  label: 'Last Login',
+                  value: userData.lastLogin
+                    ? new Date(userData.lastLogin).toLocaleString()
+                    : 'Never',
+                  icon: <Clock />,
+                },
+                { label: '2FA', value: 'Enabled', icon: <Shield /> },
+              ].map((field, i) => (
+                <motion.div
+                  key={i}
+                  whileHover={{ scale: 1.02 }}
+                  className="p-4 bg-white/5 rounded-xl border border-white/10 flex items-center gap-4"
+                >
+                  {field.icon}
+                  <div>
+                    <div className="font-aeroport text-white/80">{field.label}</div>
+                    <div className="font-loos-wide">{field.value}</div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}

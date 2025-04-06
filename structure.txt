@@ -22,6 +22,14 @@ AItopia/
 │   │       └── voicecraft.tsx
 │   │       └── linguo.tsx
 │   │       └── artrisanai.tsx
+│   │   └── tabs/
+│   │       ├── AnalysisTab.tsx
+│   │       └── DashboardTab.tsx
+│   │       └── HelpTab.tsx
+│   │       └── InvoiceTab.tsx
+│   │       └── PackageTab.tsx
+│   │       └── ProfileTab.tsx
+│   │       └── SettingsTab.tsx
 │   ├── components/
 │   │   ├── Layout.tsx
 │   │   ├── Navbar.tsx

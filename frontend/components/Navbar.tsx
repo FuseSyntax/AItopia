@@ -21,7 +21,7 @@ const Navbar = () => {
   return (
     <nav className="w-full fixed top-0 z-50 backdrop-blur-lg border-b border-white/10">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 max-w-[70vw] mx-auto">
+        <div className="flex items-center justify-between h-16 md:max-w-[70vw] mx-auto">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
               <Code2 className="text-orange w-8 h-8" />
@@ -59,7 +59,7 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       <div className={`md:hidden fixed top-0 right-0 h-full w-64 bg-custom-black/95 backdrop-blur-xl transform ${isOpen ? 'translate-x-0' : 'translate-x-full'} transition-transform duration-300 ease-in-out border-l border-white/10`}>
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-[100vh]">
           <div className="flex justify-end p-4 bg-black">
             <button
               onClick={() => setIsOpen(false)}
@@ -68,7 +68,7 @@ const Navbar = () => {
               <X className="h-6 w-6" />
             </button>
           </div>
-          <div className="flex flex-col px-4 space-y-4 bg-black h-full">
+          <div className="flex flex-col px-4 space-y-4 bg-black h-[100vh] z-10">
             {navigation.map((item) => (
               <Link
                 key={item.name}

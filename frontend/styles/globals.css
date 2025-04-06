@@ -157,3 +157,7 @@ svg g {
 .recharts-responsive-container{
   height: 250px !important;
 }
+
+.ElementsApp .InputElement.is-invalid{
+  color:#fff !important;
+}
