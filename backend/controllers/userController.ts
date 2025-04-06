@@ -1,8 +1,12 @@
 // backend/controllers/userController.ts
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../config/db.js';
+
+const jwtSecret = process.env.JWT_SECRET!;
+if (!jwtSecret) throw new Error('JWT_SECRET not set');
+
 
 export const signup = async (req: Request, res: Response) => {
   try {
@@ -92,7 +96,6 @@ export const getProfile = async (req: Request, res: Response) => {
       return res.status(500).json({ message: 'JWT secret not configured' });
     }
 
-    // Verify token (userId is now a number)
     const decoded = jwt.verify(token, jwtSecret) as { userId: number; email: string };
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
@@ -113,8 +116,6 @@ export const getProfile = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Something went wrong' });
   }
 };
-
-
 export const changePassword = async (req: Request, res: Response) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -210,5 +211,70 @@ export const updateNotificationSettings = async (req: Request, res: Response) =>
   } catch (error) {
     console.error('Update Notification Settings Error:', error);
     return res.status(500).json({ message: 'Something went wrong' });
+  }
+};
+
+export const getSubscription = async (req: Request, res: Response) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'No token provided' });
+    const decoded = jwt.verify(token, jwtSecret) as { userId: number };
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { plan: true, selectedTools: true },
+    });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json(user);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: 'Could not fetch subscription' });
+  }
+};
+
+export const updateSubscription = async (req: Request, res: Response) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'No token provided' });
+    const { plan, selectedTools } = req.body as { plan: string; selectedTools: string[] };
+    const decoded = jwt.verify(token, jwtSecret) as { userId: number };
+    const updated = await prisma.user.update({
+      where: { id: decoded.userId },
+      data: { plan, selectedTools },
+      select: { plan: true, selectedTools: true },
+    });
+    res.json(updated);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: 'Could not update subscription' });
+  }
+};
+
+
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'No token provided' });
+
+    const { userId } = jwt.verify(token, jwtSecret) as { userId: number };
+    const { name, profileImage } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ message: 'Name is required' });
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { name, profileImage },
+      select: { name: true, lastLogin: true, profileImage: true },
+    });
+
+    res.json(updated);
+  } catch (err: any) {
+    console.error(err);
+    if (err.code === 'P2002') {
+      return res.status(409).json({ message: 'Name already in use' });
+    }
+    res.status(500).json({ message: 'Failed to update profile' });
   }
 };
