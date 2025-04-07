@@ -1,3 +1,4 @@
+// backend/routes/paymentRoutes.ts
 import express from 'express';
 import Stripe from 'stripe';
 import Razorpay from 'razorpay';
@@ -30,12 +31,14 @@ router.post('/create-razorpay-order', async (req, res) => {
   const { amount, currency } = req.body;
   try {
     const order = await razorpay.orders.create({
-      amount,       // in paise
+      amount, // in paise
       currency,
       receipt: `receipt_${Date.now()}`,
     });
-    res.json({ orderId: order.id });
+    console.log('Created Razorpay order:', order); // Debug log
+    res.json({ order_id: order.id }); // Ensure this is "order_id"
   } catch (error: any) {
+    console.error('Error creating Razorpay order:', error);
     res.status(500).json({ error: error.message });
   }
 });

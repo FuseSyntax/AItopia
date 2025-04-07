@@ -1,3 +1,4 @@
+// PackageTab.tsx
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, X } from 'lucide-react';
@@ -22,7 +23,7 @@ type Props = {
   setSelectedTools: (tools: string[]) => void;
   showCheckout: boolean;
   setShowCheckout: (show: boolean) => void;
-  user: any; // Replace with proper user type
+  user: any;
 };
 
 const allTools = [
@@ -53,10 +54,12 @@ const CheckoutModal: React.FC<{
   };
 
   const handleProceedToPayment = () => {
+    console.log('Proceeding to payment with tools:', localSelectedTools);
     setStep('payment');
   };
 
   const handleStripeSuccess = async () => {
+    console.log('Stripe payment successful, updating subscription...');
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/subscription`, {
         method: 'PATCH',
@@ -67,61 +70,96 @@ const CheckoutModal: React.FC<{
         body: JSON.stringify({ plan: selectedPackage.id, selectedTools: localSelectedTools }),
       });
       if (res.ok) {
+        console.log('Subscription updated successfully');
         onConfirm(localSelectedTools);
         onClose();
       } else {
-        setPaymentError('Failed to update subscription');
+        const errorData = await res.json();
+        setPaymentError(`Failed to update subscription: ${errorData.error}`);
       }
     } catch (error) {
       console.error('Error updating subscription:', error);
-      setPaymentError('Something went wrong');
+      setPaymentError('Something went wrong with Stripe');
     }
   };
 
   const handleRazorpayPayment = async () => {
+    console.log('Initiating Razorpay payment...');
     const isLoaded = await loadRazorpayScript();
     if (!isLoaded) {
       setPaymentError('Razorpay SDK failed to load');
+      console.error('Razorpay SDK failed to load');
       return;
     }
 
-    const options = {
-      key: process.env.NEXT_PUBLIC_RAZOR_PAY_KEY_ID,
-      amount: selectedPackage.price * 100, // Convert to paise (INR)
-      currency: 'INR',
-      name: 'AItopia',
-      description: `${selectedPackage.title} Plan`,
-      handler: async (response: any) => {
-        try {
-          const verifyResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/verify-razorpay-payment`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-            }),
-          });
-          const verifyData = await verifyResponse.json();
-          if (verifyData.success) {
-            await handleStripeSuccess(); // Reuse the same subscription update logic
-          } else {
+    try {
+      const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/create-razorpay-order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: selectedPackage.price * 100, // In paise
+          currency: 'INR',
+        }),
+      });
+      const orderData = await orderResponse.json();
+      // Accept either "order_id" or "orderId" for flexibility
+      const orderId = orderData.order_id || orderData.orderId;
+      if (!orderResponse.ok || !orderId) {
+        setPaymentError('Failed to create Razorpay order');
+        console.error('Order creation failed:', orderData);
+        return;
+      }
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZOR_PAY_KEY_ID,
+        amount: selectedPackage.price * 100,
+        currency: 'INR',
+        name: 'AItopia',
+        description: `${selectedPackage.title} Plan`,
+        order_id: orderId, // Use the resolved order ID
+        handler: async (response) => {
+          console.log('Razorpay payment response:', response);
+          try {
+            console.log('Sending verification request to backend...');
+            const verifyResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/verify-razorpay-payment`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+            const verifyData = await verifyResponse.json();
+            console.log('Verification response:', verifyData);
+            if (verifyData.success) {
+              console.log('Razorpay payment verified');
+              await handleStripeSuccess();
+            } else {
+              setPaymentError('Payment verification failed');
+              console.error('Verification failed:', verifyData.error);
+            }
+          } catch (error) {
+            console.error('Error verifying Razorpay payment:', error);
             setPaymentError('Payment verification failed');
           }
-        } catch (error) {
-          console.error('Error verifying Razorpay payment:', error);
-          setPaymentError('Payment verification failed');
-        }
-      },
-      prefill: {
-        name: user?.name || 'User',
-        email: user?.email || '',
-      },
-    };
+        },
+        prefill: {
+          name: user?.name || 'User',
+          email: user?.email || '',
+        },
+      };
 
-    const rzp = new window.Razorpay(options);
-    rzp.on('payment.failed', () => setPaymentError('Payment failed'));
-    rzp.open();
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', (response) => {
+        console.error('Razorpay payment failed:', response);
+        setPaymentError('Payment failed');
+      });
+      rzp.open();
+    } catch (error) {
+      console.error('Error creating Razorpay order:', error);
+      setPaymentError('Failed to initiate payment');
+    }
   };
 
   return (
@@ -208,7 +246,7 @@ const CheckoutModal: React.FC<{
             <div className="space-y-4">
               <StripePaymentForm
                 onSuccess={handleStripeSuccess}
-                amount={selectedPackage.price * 100} // Convert to cents
+                amount={selectedPackage.price * 100}
                 currency="usd"
               />
               <motion.button
@@ -238,7 +276,7 @@ const PackageTab: React.FC<Props> = ({
 }) => {
   const handleSelectPlan = (pkg: PackageType) => {
     setSelectedPackage(pkg);
-    setSelectedTools([]); // Reset tools when selecting a new package
+    setSelectedTools([]);
     setShowCheckout(true);
   };
 
