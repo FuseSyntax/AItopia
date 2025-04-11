@@ -9,6 +9,11 @@ const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
 
 // Initialize Razorpay with server-side env vars
+if (!process.env.RAZOR_PAY_KEY_ID || !process.env.RAZOR_PAY_SECRET_KEY) {
+  console.error('Razorpay environment variables missing');
+  // Optionally exit process if critical
+}
+
 const razorpay = new Razorpay({
   key_id: process.env.RAZOR_PAY_KEY_ID!,
   key_secret: process.env.RAZOR_PAY_SECRET_KEY!,
@@ -28,15 +33,23 @@ router.post('/create-payment-intent', async (req, res) => {
 // Create Razorpay Order
 router.post('/create-razorpay-order', async (req, res) => {
   const { amount, currency } = req.body;
+
+  // Validate incoming data (allow 0 as a valid amount)
+  if (amount === undefined || amount === null || currency === undefined || currency === null) {
+    return res.status(400).json({ error: 'Amount and currency are required' });
+  }
+
   try {
     const order = await razorpay.orders.create({
-      amount,       // in paise
+      amount: Number(amount), // Ensure it's a number (in paise)
       currency,
       receipt: `receipt_${Date.now()}`,
     });
-    res.json({ orderId: order.id });
+    console.log('Created Razorpay order:', order);
+    res.json({ order_id: order.id });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    console.error('Error creating Razorpay order:', error);
+    res.status(500).json({ error: error.message || 'An unknown error occurred' });
   }
 });
 
