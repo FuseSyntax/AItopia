@@ -1,9 +1,9 @@
-// PackageTab.tsx
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, X } from 'lucide-react';
 import { loadRazorpayScript } from '../../components/razorpayUtils';
 import StripePaymentForm from '../../components/StripePaymentForm';
+import { useAuth } from '../../context/AuthContext';
 
 type PackageType = {
   id: string;
@@ -27,8 +27,16 @@ type Props = {
 };
 
 const allTools = [
-  'Artisan AI', 'VoiceCraft', 'LingoSync', 'NeuroChat', 'CodeForge',
-  'VisionX', 'DataMiner', 'QuantumCore', 'TextGenix', 'ImageSynth'
+  'Artisan AI',
+  'VoiceCraft',
+  'LingoSync',
+  'NeuroChat',
+  'CodeForge',
+  'VisionX',
+  'DataMiner',
+  'QuantumCore',
+  'TextGenix',
+  'ImageSynth',
 ];
 
 const CheckoutModal: React.FC<{
@@ -41,17 +49,20 @@ const CheckoutModal: React.FC<{
   const [step, setStep] = useState<'selectTools' | 'payment'>('selectTools');
   const [localSelectedTools, setLocalSelectedTools] = useState<string[]>([]);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const { updateUserSubscription } = useAuth();
 
   const handleToolSelect = (tool: string) => {
     const limit = selectedPackage.toolsIncluded;
     if (limit === 'Unlimited' || localSelectedTools.length < (limit as number)) {
-      setLocalSelectedTools(prev =>
-        prev.includes(tool) ? prev.filter(t => t !== tool) : [...prev, tool]
+      setLocalSelectedTools((prev) =>
+        prev.includes(tool) ? prev.filter((t) => t !== tool) : [...prev, tool]
       );
     } else if (localSelectedTools.includes(tool)) {
-      setLocalSelectedTools(prev => prev.filter(t => t !== tool));
+      setLocalSelectedTools((prev) => prev.filter((t) => t !== tool));
     }
   };
+
+  console.log('Razorpay Key ID:', process.env.NEXT_PUBLIC_RAZOR_PAY_KEY_ID);
 
   const handleProceedToPayment = () => {
     console.log('Proceeding to payment with tools:', localSelectedTools);
@@ -70,7 +81,15 @@ const CheckoutModal: React.FC<{
         body: JSON.stringify({ plan: selectedPackage.id, selectedTools: localSelectedTools }),
       });
       if (res.ok) {
-        console.log('Subscription updated successfully');
+        const updatedSubscription = await res.json();
+        // Normalize the subscription data
+        const subscriptionData = {
+          status: updatedSubscription.status || 'active',
+          plan: updatedSubscription.plan || selectedPackage.id,
+          selectedTools: updatedSubscription.selectedTools || localSelectedTools,
+        };
+        updateUserSubscription(subscriptionData);
+        console.log('Subscription updated successfully:', subscriptionData);
         onConfirm(localSelectedTools);
         onClose();
       } else {
@@ -84,6 +103,12 @@ const CheckoutModal: React.FC<{
   };
 
   const handleRazorpayPayment = async () => {
+    if (selectedPackage.price === 0) {
+      console.log('Free plan selected; skipping Razorpay payment.');
+      await handleStripeSuccess();
+      return;
+    }
+
     console.log('Initiating Razorpay payment...');
     const isLoaded = await loadRazorpayScript();
     if (!isLoaded) {
@@ -97,12 +122,11 @@ const CheckoutModal: React.FC<{
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: selectedPackage.price * 100, // In paise
+          amount: selectedPackage.price * 100,
           currency: 'INR',
         }),
       });
       const orderData = await orderResponse.json();
-      // Accept either "order_id" or "orderId" for flexibility
       const orderId = orderData.order_id || orderData.orderId;
       if (!orderResponse.ok || !orderId) {
         setPaymentError('Failed to create Razorpay order');
@@ -116,8 +140,8 @@ const CheckoutModal: React.FC<{
         currency: 'INR',
         name: 'AItopia',
         description: `${selectedPackage.title} Plan`,
-        order_id: orderId, // Use the resolved order ID
-        handler: async (response) => {
+        order_id: orderId,
+        handler: async (response: any) => {
           console.log('Razorpay payment response:', response);
           try {
             console.log('Sending verification request to backend...');
@@ -151,7 +175,7 @@ const CheckoutModal: React.FC<{
       };
 
       const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', (response) => {
+      rzp.on('payment.failed', (response: any) => {
         console.error('Razorpay payment failed:', response);
         setPaymentError('Payment failed');
       });
@@ -197,12 +221,14 @@ const CheckoutModal: React.FC<{
                   )
                 </span>
                 <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-                  {allTools.map(tool => (
+                  {allTools.map((tool) => (
                     <motion.div
                       key={tool}
                       whileTap={{ scale: 0.95 }}
                       className={`p-2 rounded-lg cursor-pointer transition-all ${
-                        localSelectedTools.includes(tool) ? 'bg-orange text-black' : 'bg-white/5 hover:bg-white/10'
+                        localSelectedTools.includes(tool)
+                          ? 'bg-orange text-black'
+                          : 'bg-white/5 hover:bg-white/10'
                       } ${
                         selectedPackage.toolsIncluded !== 'Unlimited' &&
                         localSelectedTools.length >= (selectedPackage.toolsIncluded as number) &&
@@ -244,11 +270,12 @@ const CheckoutModal: React.FC<{
             </div>
             {paymentError && <p className="text-red-500">{paymentError}</p>}
             <div className="space-y-4">
-              <StripePaymentForm
+              {/* Temporarily disable Stripe until implemented */}
+              {/* <StripePaymentForm
                 onSuccess={handleStripeSuccess}
                 amount={selectedPackage.price * 100}
                 currency="usd"
-              />
+              /> */}
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 className="w-full py-3 rounded-xl font-loos-wide bg-green-500 text-white"
@@ -295,7 +322,7 @@ const PackageTab: React.FC<Props> = ({
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
-        {packages.map(pkg => (
+        {packages.map((pkg) => (
           <motion.div
             key={pkg.id}
             whileHover={{ scale: 1.05 }}
@@ -328,7 +355,7 @@ const PackageTab: React.FC<Props> = ({
             >
               {pkg.id === selectedPackage?.id ? 'Manage Plan' : 'Select Plan'}
             </motion.button>
-          </motion.div>
+          </motion.div> // Correctly closed with </motion.div>
         ))}
       </div>
 
