@@ -1,21 +1,31 @@
-import { Router } from 'express';
+import express from 'express';
 import {
-  signup, login, getProfile, updateProfile, changePassword, deleteAccount,
-  getNotificationSettings, updateNotificationSettings,
-  getSubscription, updateSubscription
+  signup,
+  login,
+  getProfile,
+  updateProfile,
+  changePassword,
+  deleteAccount,
+  getNotificationSettings,
+  updateNotificationSettings,
+  getSubscription,
+  updateSubscription,
+  getInvoices,
 } from '../controllers/userController.js';
+import { authMiddleware } from '../middleware/auth.js';
 
-const router = Router();
+const router = express.Router();
 
-router.post('/signup', signup);
+router.post('/register', signup);
 router.post('/login', login);
-router.get('/profile', getProfile);
-router.patch('/profile', updateProfile);
-router.post('/change-password', changePassword);
-router.delete('/delete-account', deleteAccount);
-router.get('/settings', getNotificationSettings);
-router.patch('/settings', updateNotificationSettings);
-router.get('/subscription', getSubscription);
-router.patch('/subscription', updateSubscription);
+router.patch('/profile', authMiddleware, updateProfile);
+router.patch('/password', authMiddleware, changePassword);
+router.get('/notifications', authMiddleware, getNotificationSettings);
+router.patch('/notifications', authMiddleware, updateNotificationSettings);
+router.get('/subscription', authMiddleware, getSubscription);
+router.patch('/subscription', authMiddleware, updateSubscription);
+router.get('/invoices', authMiddleware, getInvoices);
+router.get('/profile', authMiddleware, getProfile);
+router.delete('/delete-account', authMiddleware, deleteAccount);
 
 export default router;

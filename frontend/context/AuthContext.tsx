@@ -1,77 +1,135 @@
-import React, { createContext, useState, useEffect, ReactNode, useContext } from 'react';
+//frontend/context/authContext.tsx
 
-interface Subscription {
-  status: string;
-  plan: string;
-  selectedTools: string[];
-}
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-interface AuthUser {
+interface User {
+  id: number;
+  name: string;
+  email: string;
   token: string;
-  subscription?: Subscription;
+  subscription?: {
+    plan: string;
+    selectedTools: string[];
+    status: string;
+    startDate?: string;
+    endDate?: string;
+  };
 }
 
-interface AuthContextProps {
-  user: AuthUser | null;
-  login: (token: string) => void;
+interface AuthContextType {
+  user: User | null;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  updateUserSubscription: (subscription: Subscription) => void;
+  updateUserSubscription: (subscription: { plan: string; selectedTools: string[]; status: string }) => void;
+  refreshUserProfile: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextProps>({
-  user: null,
-  login: () => {},
-  logout: () => {},
-  updateUserSubscription: () => {},
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<AuthUser | null>(null);
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const storedSubscription = localStorage.getItem('subscription');
-    if (token) {
-      const userData: AuthUser = { token };
-      if (storedSubscription) {
-        try {
-          userData.subscription = JSON.parse(storedSubscription);
-        } catch (e) {
-          console.error('Error parsing stored subscription:', e);
-        }
+  const login = async (email: string, password: string) => {
+    try {
+      console.log('Attempting login with:', { email });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      console.log('Login response:', { status: res.status, data });
+      if (!res.ok) {
+        throw new Error(data.message || 'Login failed');
       }
-      setUser(userData);
-    }
-  }, []);
 
-  const login = (token: string) => {
-    localStorage.setItem('token', token);
-    setUser({ token });
+      const userData: User = {
+        id: data.user?.id || data.userId,
+        name: data.user?.name || 'Unknown',
+        email: data.user?.email || email,
+        token: data.token,
+        subscription: data.user?.subscription || {
+          plan: 'starter',
+          selectedTools: [],
+          status: 'inactive',
+        },
+      };
+
+      setUser(userData);
+      localStorage.setItem('token', data.token);
+      await refreshUserProfile(); // Ensure latest profile data after login
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('subscription');
     setUser(null);
+    localStorage.removeItem('token');
   };
 
-  const updateUserSubscription = (subscription: Subscription) => {
-    setUser((prev) => {
-      if (!prev) return prev;
-      const updatedUser = {
-        ...prev,
-        subscription,
-      };
-      localStorage.setItem('subscription', JSON.stringify(subscription));
-      return updatedUser;
-    });
+  const updateUserSubscription = (subscription: { plan: string; selectedTools: string[]; status: string }) => {
+    if (user) {
+      setUser({ ...user, subscription: { ...subscription, startDate: user.subscription?.startDate, endDate: user.subscription?.endDate } });
+    }
   };
+
+  const refreshUserProfile = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      console.log('Profile refresh response:', data);
+      if (res.ok) {
+        const subscriptionData = {
+          plan: data.plan || user?.subscription?.plan || 'starter',
+          selectedTools: data.selectedTools || user?.subscription?.selectedTools || [],
+          status: data.subscriptionStatus || user?.subscription?.status || 'inactive',
+          startDate: data.subscriptionStartDate || user?.subscription?.startDate,
+          endDate: data.subscriptionEndDate || user?.subscription?.endDate,
+        };
+        setUser({
+          id: data.id || user?.id || 0,
+          name: data.name || user?.name || 'Unknown',
+          email: data.email || user?.email || '',
+          token,
+          subscription: subscriptionData,
+        });
+      } else {
+        console.error('Failed to refresh profile:', data.message);
+        logout();
+      }
+    } catch (error) {
+      console.error('Error refreshing profile:', error);
+      logout();
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      console.log('Found token, refreshing profile');
+      refreshUserProfile();
+    }
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateUserSubscription }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUserSubscription, refreshUserProfile }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

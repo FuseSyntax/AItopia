@@ -100,7 +100,7 @@ const Dashboard = () => {
           fetch('http://localhost:5000/api/users/profile', {
             headers: { Authorization: `Bearer ${user.token}` },
           }),
-          fetch('http://localhost:5000/api/users/settings', {
+          fetch('http://localhost:5000/api/users/Notifications', {
             headers: { Authorization: `Bearer ${user.token}` },
           }),
           fetch('http://localhost:5000/api/users/subscription', {

@@ -1,21 +1,19 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, Github, Sparkles, Rocket, Fingerprint } from 'lucide-react';
+import { Mail, Lock, User, Sparkles, Rocket, Fingerprint } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
   const [form, setForm] = useState({ name: '', email: '', password: '' });
-  const { login } = useAuth(); // Use login function from context
   const [error, setError] = useState('');
-  const { user } = useAuth();
-  const router = useRouter(); // Initialize router
+  const { user, login } = useAuth();
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-
 
   useEffect(() => {
     if (user) {
@@ -26,46 +24,51 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    // Adjust the endpoint URL based on where your Express server is running.
-    const endpoint = activeTab === 'login'
-      ? 'http://localhost:5000/api/users/login'
-      : 'http://localhost:5000/api/users/signup';
-    try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.message || 'An error occurred');
-        return;
+
+    if (activeTab === 'login') {
+      try {
+        console.log('Attempting login:', { email: form.email });
+        await login(form.email, form.password);
+        router.push('/dashboard');
+      } catch (err: any) {
+        setError(err.message || 'Failed to log in. Please try again.');
       }
-      // Save token via AuthContext
-      login(data.token);
-      router.push('/dashboard');
-    } catch (err) {
-      setError('An error occurred. Please try again.');
+    } else {
+      try {
+        console.log('Attempting signup:', form);
+        const res = await fetch('http://localhost:5000/api/users/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.message || 'Signup failed');
+        }
+        await login(form.email, form.password);
+        router.push('/dashboard');
+      } catch (err: any) {
+        setError(err.message || 'Failed to sign up. Please try again.');
+      }
     }
   };
 
   return (
     <div className="min-h-screen bg-custom-black relative overflow-hidden">
-      {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
-          animate={{ 
+          animate={{
             x: [0, 100, 0],
             y: [0, -50, 0],
-            rotate: [0, 180, 360]
+            rotate: [0, 180, 360],
           }}
           transition={{ duration: 20, repeat: Infinity }}
           className="absolute w-96 h-96 bg-gradient-to-r from-orange/10 to-amber-500/10 blur-3xl -top-48 -left-48 rounded-full"
         />
         <motion.div
-          animate={{ 
+          animate={{
             scale: [1, 1.2, 1],
-            opacity: [0.3, 0.6, 0.3]
+            opacity: [0.3, 0.6, 0.3],
           }}
           transition={{ duration: 8, repeat: Infinity }}
           className="absolute w-64 h-64 bg-gradient-to-br from-orange/20 to-transparent blur-2xl top-1/2 right-0 rounded-full"
@@ -73,7 +76,7 @@ const Login = () => {
       </div>
 
       <main className="px-4 sm:px-0 sm:w-[90vw] md:w-[80vw] xl:w-[70vw] mx-auto py-20 relative z-10">
-        <motion.div 
+        <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 md:p-16 max-w-2xl mx-auto shadow-2xl shadow-orange/10"
@@ -89,13 +92,12 @@ const Login = () => {
               {activeTab === 'login' ? 'Welcome Back' : 'Launch Forward'}
             </h1>
             <p className="font-aeroport text-xl text-white/80">
-              {activeTab === 'login' 
+              {activeTab === 'login'
                 ? 'Ignite your AI journey with secure access'
                 : 'Embark on your innovation adventure'}
             </p>
           </div>
 
-          {/* Tabs */}
           <div className="flex gap-4 justify-center my-8 relative">
             {['login', 'signup'].map((tab) => (
               <motion.button
@@ -112,7 +114,6 @@ const Login = () => {
             ))}
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {activeTab === 'signup' && (
               <div className="space-y-2">

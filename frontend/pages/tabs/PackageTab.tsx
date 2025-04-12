@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, X } from 'lucide-react';
 import { loadRazorpayScript } from '../../components/razorpayUtils';
-import StripePaymentForm from '../../components/StripePaymentForm';
 import { useAuth } from '../../context/AuthContext';
 
 type PackageType = {
@@ -49,28 +48,26 @@ const CheckoutModal: React.FC<{
   const [step, setStep] = useState<'selectTools' | 'payment'>('selectTools');
   const [localSelectedTools, setLocalSelectedTools] = useState<string[]>([]);
   const [paymentError, setPaymentError] = useState<string | null>(null);
-  const { updateUserSubscription } = useAuth();
+  const { updateUserSubscription, refreshUserProfile } = useAuth();
 
   const handleToolSelect = (tool: string) => {
     const limit = selectedPackage.toolsIncluded;
     if (limit === 'Unlimited' || localSelectedTools.length < (limit as number)) {
       setLocalSelectedTools((prev) =>
-        prev.includes(tool) ? prev.filter((t) => t !== tool) : [...prev, tool]
+        prev.includes(tool) ? prev.filter((t) => t !== tool) : [...prev, tool],
       );
     } else if (localSelectedTools.includes(tool)) {
       setLocalSelectedTools((prev) => prev.filter((t) => t !== tool));
     }
   };
 
-  console.log('Razorpay Key ID:', process.env.NEXT_PUBLIC_RAZOR_PAY_KEY_ID);
-
   const handleProceedToPayment = () => {
     console.log('Proceeding to payment with tools:', localSelectedTools);
     setStep('payment');
   };
 
-  const handleStripeSuccess = async () => {
-    console.log('Stripe payment successful, updating subscription...');
+  const handlePaymentSuccess = async () => {
+    console.log('Payment successful, updating subscription...');
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/subscription`, {
         method: 'PATCH',
@@ -78,34 +75,38 @@ const CheckoutModal: React.FC<{
           'Content-Type': 'application/json',
           Authorization: `Bearer ${user.token}`,
         },
-        body: JSON.stringify({ plan: selectedPackage.id, selectedTools: localSelectedTools }),
+        body: JSON.stringify({
+          plan: selectedPackage.id,
+          selectedTools: localSelectedTools,
+          amount: selectedPackage.price,
+        }),
       });
       if (res.ok) {
         const updatedSubscription = await res.json();
-        // Normalize the subscription data
         const subscriptionData = {
           status: updatedSubscription.status || 'active',
           plan: updatedSubscription.plan || selectedPackage.id,
           selectedTools: updatedSubscription.selectedTools || localSelectedTools,
         };
         updateUserSubscription(subscriptionData);
+        await refreshUserProfile(); // Refresh profile to ensure latest data
         console.log('Subscription updated successfully:', subscriptionData);
         onConfirm(localSelectedTools);
         onClose();
       } else {
         const errorData = await res.json();
-        setPaymentError(`Failed to update subscription: ${errorData.error}`);
+        setPaymentError(`Failed to save subscription: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error updating subscription:', error);
-      setPaymentError('Something went wrong with Stripe');
+      setPaymentError('Failed to save your subscription. Please try again.');
     }
   };
 
   const handleRazorpayPayment = async () => {
     if (selectedPackage.price === 0) {
       console.log('Free plan selected; skipping Razorpay payment.');
-      await handleStripeSuccess();
+      await handlePaymentSuccess();
       return;
     }
 
@@ -158,7 +159,7 @@ const CheckoutModal: React.FC<{
             console.log('Verification response:', verifyData);
             if (verifyData.success) {
               console.log('Razorpay payment verified');
-              await handleStripeSuccess();
+              await handlePaymentSuccess();
             } else {
               setPaymentError('Payment verification failed');
               console.error('Verification failed:', verifyData.error);
@@ -270,12 +271,6 @@ const CheckoutModal: React.FC<{
             </div>
             {paymentError && <p className="text-red-500">{paymentError}</p>}
             <div className="space-y-4">
-              {/* Temporarily disable Stripe until implemented */}
-              {/* <StripePaymentForm
-                onSuccess={handleStripeSuccess}
-                amount={selectedPackage.price * 100}
-                currency="usd"
-              /> */}
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 className="w-full py-3 rounded-xl font-loos-wide bg-green-500 text-white"
@@ -317,7 +312,7 @@ const PackageTab: React.FC<Props> = ({
       <div className="flex justify-between items-center">
         <h2 className="font-loos-wide text-3xl text-orange">AI Tool Packages</h2>
         <div className="px-4 py-2 bg-white/5 rounded-xl flex items-center gap-2">
-          <span className="font-aeroport">Current Plan: {selectedPackage?.title || 'None'} Tier</span>
+          <span className="font-aeroport">Current Plan: {selectedPackage?.title || user?.subscription?.plan || 'None'} Tier</span>
         </div>
       </div>
 
@@ -327,7 +322,9 @@ const PackageTab: React.FC<Props> = ({
             key={pkg.id}
             whileHover={{ scale: 1.05 }}
             className={`relative backdrop-blur-lg bg-gradient-to-b ${pkg.gradient} border-2 ${
-              pkg.id === selectedPackage?.id ? 'border-orange' : 'border-white/10'
+              pkg.id === selectedPackage?.id || pkg.id === user?.subscription?.plan?.toLowerCase()
+                ? 'border-orange'
+                : 'border-white/10'
             } rounded-2xl p-8 space-y-6`}
           >
             {pkg.recommended && (
@@ -353,9 +350,9 @@ const PackageTab: React.FC<Props> = ({
               className="w-full py-3 rounded-xl font-loos-wide bg-white/5 hover:bg-white/10"
               onClick={() => handleSelectPlan(pkg)}
             >
-              {pkg.id === selectedPackage?.id ? 'Manage Plan' : 'Select Plan'}
+              {pkg.id === user?.subscription?.plan?.toLowerCase() ? 'Manage Plan' : 'Select Plan'}
             </motion.button>
-          </motion.div> // Correctly closed with </motion.div>
+          </motion.div>
         ))}
       </div>
 

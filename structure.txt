@@ -15,27 +15,32 @@ AItopia/
 │   │   ├── login.tsx
 │   │   ├── dashboard.tsx
 │   │   ├── contact.tsx
+│   │   ├── categories.tsx
 │   │   ├── 404.tsx
 │   │   └── tools/
 │   │       ├── removebg.tsx
-│   │       └── lingoSync.tsx
-│   │       └── voicecraft.tsx
-│   │       └── linguo.tsx
-│   │       └── artrisanai.tsx
+│   │       ├── lingoSync.tsx
+│   │       ├── voicecraft.tsx
+│   │       ├── linguo.tsx
+│   │       ├── artrisanai.tsx
 │   │   └── tabs/
 │   │       ├── AnalysisTab.tsx
-│   │       └── DashboardTab.tsx
-│   │       └── HelpTab.tsx
-│   │       └── InvoiceTab.tsx
-│   │       └── PackageTab.tsx
-│   │       └── ProfileTab.tsx
-│   │       └── SettingsTab.tsx
+│   │       ├── DashboardTab.tsx
+│   │       ├── HelpTab.tsx
+│   │       ├── InvoiceTab.tsx
+│   │       ├── PackageTab.tsx
+│   │       ├── ProfileTab.tsx
+│   │       ├── SettingsTab.tsx
 │   ├── components/
 │   │   ├── Layout.tsx
 │   │   ├── Navbar.tsx
 │   │   ├── Footer.tsx
+│   ├── context/
+│   │   ├── AuthContext.tsx
+│   ├── utils/
+│   │   ├── toolsData.tsx
 │   └── styles/
-│       └── globals.css
+│       ├── globals.css
 ├── backend/
 │   ├── package.json
 │   ├── server.js
@@ -44,16 +49,17 @@ AItopia/
 │   ├── tsconfig.json
 │   ├── routes/
 │   │   ├── toolRoutes.ts
-│   │   └── userRoutes.ts
+│   │   ├── userRoutes.ts
 │   ├── controllers/
 │   │   ├── toolController.ts
-│   │   └── userController.ts
+│   │   ├── userController.ts
 │   ├── config/
-│   │   └── db.ts
+│   │   ├── db.ts
+│   ├── middleware/
+│   │   ├── auth.ts
 │   └── mcp/
-│   │   └── agentManager.ts
+│       ├── agentManager.ts
 ├── prisma/
 │   ├── schema.prisma
 │   └── migrations/
 └── README.md
-
