@@ -41,6 +41,9 @@ const SettingsTab: React.FC<Props> = ({
   user,
   logout,
 }) => {
+  const [deleteError, setDeleteError] = React.useState('');
+  const [isDeleting, setIsDeleting] = React.useState(false);
+
   const updateSettings = async (updates: Partial<NotificationSettings>) => {
     if (!user) return;
     const newSettings = { ...notificationSettings, ...updates };
@@ -79,7 +82,6 @@ const SettingsTab: React.FC<Props> = ({
       setPasswordError('Password must be at least 6 characters');
       return;
     }
-
     try {
       const response = await fetch('http://localhost:5000/api/users/change-password', {
         method: 'POST',
@@ -89,12 +91,10 @@ const SettingsTab: React.FC<Props> = ({
         },
         body: JSON.stringify({ newPassword }),
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to change password');
       }
-
       setPasswordSuccess('Password updated successfully');
       setNewPassword('');
       setConfirmPassword('');
@@ -108,21 +108,22 @@ const SettingsTab: React.FC<Props> = ({
       setDeleteConfirm(true);
       return;
     }
-
+    setDeleteError('');
+    setIsDeleting(true);
     try {
       const response = await fetch('http://localhost:5000/api/users/delete-account', {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${user.token}` },
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to delete account');
       }
-
       logout();
     } catch (error) {
-      setPasswordError((error as Error).message || 'Something went wrong');
+      setDeleteError((error as Error).message || 'Failed to delete account');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -212,15 +213,17 @@ const SettingsTab: React.FC<Props> = ({
             <div className="space-y-4">
               <label className="font-loos-wide">Delete Account</label>
               <p className="text-white/60 text-sm">This action is irreversible. All your data will be permanently deleted.</p>
+              {deleteError && <p className="text-red-400 text-sm">{deleteError}</p>}
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleDeleteAccount}
+                disabled={isDeleting}
                 className={`w-full py-3 rounded-xl font-loos-wide ${
                   deleteConfirm ? 'bg-red-500 text-white' : 'bg-white/5 text-red-400 hover:bg-white/10'
-                }`}
+                } ${isDeleting ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {deleteConfirm ? 'Confirm Deletion' : 'Delete Account'}
+                {isDeleting ? 'Deleting...' : deleteConfirm ? 'Confirm Deletion' : 'Delete Account'}
               </motion.button>
               {deleteConfirm && (
                 <motion.button
