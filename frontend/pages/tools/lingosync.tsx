@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef,  } from 'react';
 import { Video, Languages, Captions, Download, ArrowLeft, Settings, Clock } from 'lucide-react';
 import Link from 'next/link';
 
@@ -6,8 +6,7 @@ const LingoSync = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [subtitles, setSubtitles] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [targetLanguage, setTargetLanguage] = useState('en'); // default English; user can change
-  const [fontSize, setFontSize] = useState(24);
+  const [targetLanguage, ] = useState('en'); // default English; user can change
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,7 +19,7 @@ const LingoSync = () => {
         // Step 1: Upload video to extract audio.
         const videoFormData = new FormData();
         videoFormData.append('video', file);
-        const uploadRes = await fetch('http://localhost:5000/api/tools/upload', {
+        const uploadRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/tools/upload`, {
           method: 'POST',
           body: videoFormData,
         });
@@ -31,7 +30,7 @@ const LingoSync = () => {
         // For demonstration, re-using the same file.
         const audioFormData = new FormData();
         audioFormData.append('audio', file);
-        const asrRes = await fetch('http://localhost:5000/api/tools/asr', {
+        const asrRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/tools/asr`, {
           method: 'POST',
           body: audioFormData,
         });
@@ -43,7 +42,7 @@ const LingoSync = () => {
         // Step 3: If target language is not English, translate the transcript.
         if (targetLanguage !== 'en') {
           console.log('Translating transcript to:', targetLanguage);
-          const translationRes = await fetch('http://localhost:5000/api/tools/translate', {
+          const translationRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/tools/translate`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'

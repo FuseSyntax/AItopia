@@ -61,7 +61,7 @@ const ComingSoon = () => {
           </h1>
 
           <p className="font-aeroport text-xl md:text-2xl text-white/80 max-w-2xl mx-auto">
-            We're cooking up something extraordinary! Be the first to experience our next-generation AI tools.
+            {`We're`} cooking up something extraordinary! Be the first to experience our next-generation AI tools.
           </p>
 
           {/* Countdown Timer */}

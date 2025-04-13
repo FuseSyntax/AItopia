@@ -1,7 +1,7 @@
-import { Crown, Rocket, Sparkles, ImageDown, Clapperboard, Paintbrush, Code2, BrainCircuit, Video, Music, BookText, Speech, Bot, Lock } from 'lucide-react'
-import React from 'react'
-import Marquee from 'react-fast-marquee'
-import Link from 'next/link'
+import { ImageDown, Clapperboard, Paintbrush, Code2, BrainCircuit, Video, Music, BookText, Speech, Bot, Lock } from 'lucide-react';
+import React from 'react';
+import Marquee from 'react-fast-marquee';
+import Link from 'next/link';
 
 const OurMarquee = () => {
   const tools = [
@@ -92,7 +92,7 @@ const OurMarquee = () => {
   ];
 
   return (
-    <div className="relative overflow-hidden bg-custom-black py-20">
+    <div className="relative max-w-[100vw] overflow-hidden bg-custom-black py-20">
       {/* Animated background */}
       <div className="absolute inset-0">
         <div className="absolute w-[500px] h-[500px] bg-gradient-to-r from-orange/10 to-amber-500/10 blur-3xl -top-48 -left-48 rounded-full" />
@@ -109,18 +109,16 @@ const OurMarquee = () => {
 
         {/* Marquee Tools */}
         <div className="space-y-8">
-          <Marquee gradientColor={[18, 18, 18]} speed={35}>
+          <Marquee gradientColor="rgb(18,18,18)" speed={35}>
             {[...tools, ...tools].map((tool, index) => (
               <Link href={tool.link} key={`${tool.name}-${index}`} className="ml-5 flex items-center gap-4 px-6 py-3 rounded-2xl bg-gradient-to-br from-white/5 to-white/2 border border-white/10 hover:border-orange/30 transition-all">
                 <div className="p-2 bg-orange/20 rounded-lg text-orange">
                   {tool.icon}
                 </div>
                 <div>
-                  <span className='font-loos-wide text-2xl'>{tool.name}</span>
+                  <span className="font-loos-wide text-2xl">{tool.name}</span>
                   <div className="flex items-center gap-2 mt-1">
-                    <div className={`w-2 h-2 rounded-full ${
-                      tool.link === '/comingsoon' ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'
-                    }`} />
+                    <div className={`w-2 h-2 rounded-full ${tool.link === '/comingsoon' ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`} />
                     <span className="font-aeroport text-xs text-white/60">
                       {tool.link === '/comingsoon' ? 'Coming Soon' : tool.category}
                     </span>
@@ -130,14 +128,14 @@ const OurMarquee = () => {
             ))}
           </Marquee>
 
-          <Marquee direction="right" gradientColor={[18, 18, 18]} speed={35}>
+          <Marquee direction="right" gradientColor="rgb(18,18,18)" speed={35}>
             {[...tools, ...tools].map((tool, index) => (
               <div key={`${tool.name}-reverse-${index}`} className="ml-5 flex items-center gap-4 px-6 py-3 rounded-2xl bg-gradient-to-br from-white/5 to-white/2 border border-white/10 hover:border-orange/30 transition-all">
                 <div className="p-2 bg-purple-400/20 rounded-lg text-purple-400">
                   {tool.icon}
                 </div>
                 <div>
-                  <span className='font-loos-wide text-2xl'>{tool.name}</span>
+                  <span className="font-loos-wide text-2xl">{tool.name}</span>
                   <span className="block font-aeroport text-xs text-white/60">
                     {tool.description}
                   </span>
@@ -146,14 +144,14 @@ const OurMarquee = () => {
             ))}
           </Marquee>
 
-          <Marquee gradientColor={[18, 18, 18]} speed={35}>
+          <Marquee gradientColor="rgb(18,18,18)" speed={35}>
             {[...tools, ...tools].map((tool, index) => (
               <div key={`${tool.name}-alt-${index}`} className="ml-5 flex items-center gap-4 px-6 py-3 rounded-2xl bg-gradient-to-br from-white/5 to-white/2 border border-white/10 hover:border-orange/30 transition-all">
                 <div className="p-2 bg-blue-400/20 rounded-lg text-blue-400">
                   {tool.icon}
                 </div>
                 <div>
-                  <span className='font-loos-wide text-2xl'>{tool.name}</span>
+                  <span className="font-loos-wide text-2xl">{tool.name}</span>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="font-aeroport text-xs text-white/60">
                       {tool.category}
@@ -170,7 +168,7 @@ const OurMarquee = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default OurMarquee
+export default OurMarquee;

@@ -1,8 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, User, Cloud, Clock, Upload } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { useRouter } from 'next/router';
+
+// Define UserData type (consistent with Dashboard)
+type UserData = {
+  name: string;
+  email: string;
+  lastLogin: string | null;
+  profileImage?: string | null;
+};
+
+// Define props interface for ProfileTab
+interface ProfileTabProps {
+  userData: UserData | null;
+  loading: boolean;
+}
 
 // Helpers for avatar
 const hashString = (str: string): number => {
@@ -48,53 +61,28 @@ const generateAvatarSVG = (email: string): string => {
   `;
 };
 
-type UserData = {
-  name: string;
-  lastLogin: string | null;
-  profileImage?: string | null;
-};
-
-export default function ProfileTab() {
+const ProfileTab: React.FC<ProfileTabProps> = ({ userData, loading }) => {
   const { user } = useAuth();
-  const router = useRouter();
 
-  const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState<UserData>({ name: '', lastLogin: null });
-
-  // Controlled inputs
-  const [name, setName] = useState('');
+  // Controlled input for name editing
+  const [name, setName] = useState(userData?.name || '');
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-
-  
-  // Fetch profile on mount
-  useEffect(() => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-    (async () => {
-      const res = await fetch('http://localhost:5000/api/users/profile', {
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
-      if (res.ok) {
-        const data: UserData = await res.json();
-        setUserData(data);
-        setName(data.name);
-      }
-      setLoading(false);
-    })();
-  }, [user, router]);
+  // Sync name input when userData changes
+  React.useEffect(() => {
+    setName(userData?.name || '');
+  }, [userData]);
 
   // Save changes
   const handleSave = async () => {
+    if (!user) return;
     setFeedback(null);
     try {
-      const res = await fetch('http://localhost:5000/api/users/profile', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/profile`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${user!.token}`,
+          Authorization: `Bearer ${user.token}`,
         },
         body: JSON.stringify({ name }),
       });
@@ -102,16 +90,23 @@ export default function ProfileTab() {
         const err = await res.json();
         throw new Error(err.message || 'Update failed');
       }
-      const updated: UserData = await res.json();
-      setUserData(updated);
+      await res.json(); // Parse response to ensure success, but don't store it
       setFeedback({ type: 'success', message: 'Profile updated!' });
-    } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setFeedback({ type: 'error', message: err.message });
+      } else {
+        setFeedback({ type: 'error', message: 'An unknown error occurred' });
+      }
     }
   };
 
   if (loading) {
     return <div className="text-center py-20 text-white/50">Loading profile…</div>;
+  }
+
+  if (!userData) {
+    return <div className="text-center py-20 text-white/50">No profile data available.</div>;
   }
 
   return (
@@ -151,8 +146,6 @@ export default function ProfileTab() {
             />
           </div>
 
-          
-
           {/* Save Button */}
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -180,9 +173,7 @@ export default function ProfileTab() {
                 { label: 'Email', value: userData.email, icon: <Cloud /> },
                 {
                   label: 'Last Login',
-                  value: userData.lastLogin
-                    ? new Date(userData.lastLogin).toLocaleString()
-                    : 'Never',
+                  value: userData.lastLogin ? new Date(userData.lastLogin).toLocaleString() : 'Never',
                   icon: <Clock />,
                 },
                 { label: '2FA', value: 'Enabled', icon: <Shield /> },
@@ -205,4 +196,6 @@ export default function ProfileTab() {
       </div>
     </motion.div>
   );
-}
+};
+
+export default ProfileTab;

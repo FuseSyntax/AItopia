@@ -8,7 +8,17 @@ type NotificationSettings = {
   theme: string;
 };
 
-type Props = {
+type AuthUser = {
+  token: string;
+  name?: string;
+  email?: string;
+  subscription?: {
+    plan: string;
+    selectedTools: string[];
+  };
+};
+
+type SettingsTabProps = {
   notificationSettings: NotificationSettings;
   setNotificationSettings: (settings: NotificationSettings) => void;
   newPassword: string;
@@ -21,12 +31,19 @@ type Props = {
   setPasswordSuccess: (value: string) => void;
   deleteConfirm: boolean;
   setDeleteConfirm: (value: boolean) => void;
-  user: any; // Replace with proper user type
+  user: AuthUser | null; // Changed to allow null
   logout: () => void;
 };
 
-const SettingsTab: React.FC<Props> = ({
-  notificationSettings,
+type NotificationKey = keyof Omit<NotificationSettings, 'theme'>;
+
+const SettingsTab: React.FC<SettingsTabProps> = ({
+  notificationSettings = {
+    emailNotifications: false,
+    pushNotifications: false,
+    smsAlerts: false,
+    theme: 'System',
+  }, // Default settings
   setNotificationSettings,
   newPassword,
   setNewPassword,
@@ -49,7 +66,7 @@ const SettingsTab: React.FC<Props> = ({
     const newSettings = { ...notificationSettings, ...updates };
     setNotificationSettings(newSettings);
     try {
-      const res = await fetch('http://localhost:5000/api/users/settings', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/settings`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -58,12 +75,14 @@ const SettingsTab: React.FC<Props> = ({
         body: JSON.stringify(newSettings),
       });
       if (!res.ok) throw new Error('Failed to update settings');
-    } catch (error) {
-      console.error('Error updating settings:', error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Error updating settings:', error);
+      }
     }
   };
 
-  const handleToggleNotification = (key: keyof Omit<NotificationSettings, 'theme'>) => {
+  const handleToggleNotification = (key: NotificationKey) => {
     updateSettings({ [key]: !notificationSettings[key] });
   };
 
@@ -72,6 +91,10 @@ const SettingsTab: React.FC<Props> = ({
   };
 
   const handleChangePassword = async () => {
+    if (!user) {
+      setPasswordError('User not authenticated');
+      return;
+    }
     setPasswordError('');
     setPasswordSuccess('');
     if (newPassword !== confirmPassword) {
@@ -83,7 +106,7 @@ const SettingsTab: React.FC<Props> = ({
       return;
     }
     try {
-      const response = await fetch('http://localhost:5000/api/users/change-password', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,12 +121,20 @@ const SettingsTab: React.FC<Props> = ({
       setPasswordSuccess('Password updated successfully');
       setNewPassword('');
       setConfirmPassword('');
-    } catch (error) {
-      setPasswordError((error as Error).message || 'Something went wrong');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setPasswordError(error.message || 'Something went wrong');
+      } else {
+        setPasswordError('Something went wrong');
+      }
     }
   };
 
   const handleDeleteAccount = async () => {
+    if (!user) {
+      setDeleteError('User not authenticated');
+      return;
+    }
     if (!deleteConfirm) {
       setDeleteConfirm(true);
       return;
@@ -111,7 +142,7 @@ const SettingsTab: React.FC<Props> = ({
     setDeleteError('');
     setIsDeleting(true);
     try {
-      const response = await fetch('http://localhost:5000/api/users/delete-account', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/delete-account`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${user.token}` },
       });
@@ -120,8 +151,12 @@ const SettingsTab: React.FC<Props> = ({
         throw new Error(errorData.message || 'Failed to delete account');
       }
       logout();
-    } catch (error) {
-      setDeleteError((error as Error).message || 'Failed to delete account');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setDeleteError(error.message || 'Failed to delete account');
+      } else {
+        setDeleteError('Failed to delete account');
+      }
     } finally {
       setIsDeleting(false);
     }
@@ -137,7 +172,7 @@ const SettingsTab: React.FC<Props> = ({
             <div className="space-y-4">
               <label className="font-loos-wide">Theme</label>
               <div className="grid grid-cols-3 gap-4">
-                {['Light', 'Dark', 'System'].map(theme => (
+                {['Light', 'Dark', 'System'].map((theme) => (
                   <motion.div
                     key={theme}
                     whileHover={{ scale: 1.05 }}
@@ -154,23 +189,23 @@ const SettingsTab: React.FC<Props> = ({
             <div className="space-y-4">
               <label className="font-loos-wide">Notifications</label>
               <div className="space-y-3">
-                {[
+                {([
                   { label: 'Email Notifications', key: 'emailNotifications' },
                   { label: 'Push Notifications', key: 'pushNotifications' },
                   { label: 'SMS Alerts', key: 'smsAlerts' },
-                ].map(setting => (
+                ] as const).map((setting) => (
                   <div key={setting.key} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
                     <span>{setting.label}</span>
                     <motion.div
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => handleToggleNotification(setting.key as any)}
+                      onClick={() => handleToggleNotification(setting.key)}
                       className={`w-12 h-6 rounded-full p-1 cursor-pointer ${
-                        notificationSettings[setting.key as any] ? 'bg-green-400' : 'bg-white/10'
+                        notificationSettings[setting.key] ? 'bg-green-400' : 'bg-white/10'
                       }`}
                     >
                       <motion.div
                         className="w-4 h-4 bg-white rounded-full shadow-lg"
-                        animate={{ x: notificationSettings[setting.key as any] ? 24 : 0 }}
+                        animate={{ x: notificationSettings[setting.key] ? 24 : 0 }}
                         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                       />
                     </motion.div>
@@ -189,14 +224,14 @@ const SettingsTab: React.FC<Props> = ({
                 type="password"
                 placeholder="New Password"
                 value={newPassword}
-                onChange={e => setNewPassword(e.target.value)}
+                onChange={(e) => setNewPassword(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl p-4 focus:outline-none focus:border-orange"
               />
               <input
                 type="password"
                 placeholder="Confirm Password"
                 value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl p-4 focus:outline-none focus:border-orange"
               />
               {passwordError && <p className="text-red-400 text-sm">{passwordError}</p>}

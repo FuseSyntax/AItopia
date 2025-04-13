@@ -25,7 +25,9 @@ export default function Connect() {
           <h1 className="uppercase font-loos-wide text-4xl md:text-6xl xl:text-7xl font-bold text-orange">
             Connect With Us
           </h1>
-          <p className="font-aeroport text-xl md:text-2xl text-white/80 max-w-2xl mx-auto">
+          <p
+            className="font-aeroport text-xl md:text-2xl text-white/80 max-w-2xl mx-auto"
+          >
             Get in touch with our AI experts and revolutionize your workflow
           </p>
         </div>
@@ -129,7 +131,15 @@ export default function Connect() {
   );
 }
 
-const InputField = ({ label, type, value, onChange }) => (
+// Define props interface for InputField
+interface InputFieldProps {
+  label: string;
+  type: 'text' | 'email' | 'textarea';
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+}
+
+const InputField = ({ label, type, value, onChange }: InputFieldProps) => (
   <div className="space-y-2">
     <label className="font-aeroport text-white/80">{label}</label>
     {type === 'textarea' ? (
@@ -151,7 +161,14 @@ const InputField = ({ label, type, value, onChange }) => (
   </div>
 );
 
-const ContactInfo = ({ icon, title, value }) => (
+// Define props interface for ContactInfo
+interface ContactInfoProps {
+  icon: React.ReactNode;
+  title: string;
+  value: string;
+}
+
+const ContactInfo = ({ icon, title, value }: ContactInfoProps) => (
   <motion.div 
     whileHover={{ scale: 1.02 }}
     className="backdrop-blur-lg bg-white/5 border border-white/10 rounded-3xl p-6"

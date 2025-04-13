@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Mail, Lock, User, Sparkles, Rocket, Fingerprint } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../context/AuthContext';
@@ -30,13 +30,17 @@ const Login = () => {
         console.log('Attempting login:', { email: form.email });
         await login(form.email, form.password);
         router.push('/dashboard');
-      } catch (err: any) {
-        setError(err.message || 'Failed to log in. Please try again.');
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message || 'Failed to log in. Please try again.');
+        } else {
+          setError('Failed to log in. Please try again.');
+        }
       }
     } else {
       try {
         console.log('Attempting signup:', form);
-        const res = await fetch('http://localhost:5000/api/users/register', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(form),
@@ -47,8 +51,12 @@ const Login = () => {
         }
         await login(form.email, form.password);
         router.push('/dashboard');
-      } catch (err: any) {
-        setError(err.message || 'Failed to sign up. Please try again.');
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message || 'Failed to sign up. Please try again.');
+        } else {
+          setError('Failed to sign up. Please try again.');
+        }
       }
     }
   };
