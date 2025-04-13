@@ -3,7 +3,7 @@ import { Code2, BrainCircuit, Rocket, Mail, Twitter, Github, Tornado } from 'luc
 
 const Footer = () => {
   return (
-    <footer className="sm:w-[90vw] md:w-[80vw] xl:w-[70vw] mx-auto pb-10 px-4">
+    <footer className="md:w-[70vw]  mx-auto pb-10 px-4">
       <div className="border-t border-white/10 pt-16">
         <div className="grid md:grid-cols-4 gap-8 mb-12">
           {/* Brand Section */}

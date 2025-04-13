@@ -26,7 +26,7 @@ const CategoriesPage = () => {
       ? user.subscription
       : null;
   const hasSubscription = subscription?.status === 'active';
-  const purchasedTools = subscription?.selectedTools?.length > 0 ? subscription.selectedTools : [];
+  const purchasedTools = subscription?.selectedTools ?? [];
 
   const filteredTools = hasSubscription && purchasedTools.length > 0
     ? allTools.filter((tool) => purchasedTools.includes(tool.name))

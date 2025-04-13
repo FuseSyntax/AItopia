@@ -125,7 +125,7 @@ const HelpTab: React.FC = () => {
                 Message Received!
               </h3>
               <p className="font-aeroport text-white/80 mb-6">
-                Thank you for contacting us. We'll respond within 24 hours.
+                Thank you for contacting us. {`We'll`} respond within 24 hours.
               </p>
               
               <motion.button

@@ -24,7 +24,7 @@ const ArtrisanAi = () => {
   const handleGenerate = async () => {
     setIsProcessing(true);
     try {
-      const response = await fetch('http://localhost:5000/api/tools/generate-art', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/tools/generate-art`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

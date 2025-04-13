@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion';
-import { User, Plus, GitMerge, Satellite, Zap, BrainCircuit, Network, Database } from 'lucide-react';
+import { GitMerge, Satellite, BrainCircuit, Network, Database } from 'lucide-react';
+import React from 'react';
+
 
 const TeamNetwork = () => {
   const nodes = [
@@ -54,7 +56,7 @@ const TeamNetwork = () => {
 
   return (
     <div className="relative min-h-screen py-28 overflow-hidden">
-      {/* Animated background */}
+      {/* Animated background elements */}
       <motion.div 
         animate={{ rotate: [0, 360] }}
         transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
@@ -72,7 +74,7 @@ const TeamNetwork = () => {
             Neural Architecture
           </motion.h2>
           <p className="font-aeroport text-xl text-white/80 max-w-2xl mx-auto">
-            Interactive visualization of our platform's living ecosystem
+            Interactive visualization of our {`platform's`} living ecosystem
           </p>
         </div>
 
@@ -82,7 +84,8 @@ const TeamNetwork = () => {
           {connections.map((connection, index) => {
             const fromNode = nodes.find(n => n.id === connection.from);
             const toNode = nodes.find(n => n.id === connection.to);
-            
+            // Skip rendering if either node is undefined
+            if (!fromNode || !toNode) return null;
             return (
               <motion.div
                 key={index}

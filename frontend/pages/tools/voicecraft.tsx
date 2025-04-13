@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Mic, Volume2, Download, ArrowLeft, Play, Pause, User, Settings, Music2, Volume } from 'lucide-react';
+import { Mic, Volume2, Download, ArrowLeft, Play, Pause, User, Settings, Music2 } from 'lucide-react';
 import Link from 'next/link';
 
 const VoiceCraft = () => {
@@ -51,7 +51,7 @@ const VoiceCraft = () => {
 
       setIsProcessing(true);
       try {
-        const response = await fetch('http://localhost:5000/api/tools/voicecraft', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/tools/voicecraft`, {
           method: 'POST',
           body: formData,
         });
@@ -139,7 +139,7 @@ const VoiceCraft = () => {
       formData.append('voiceModel', selectedVoice);
       setIsProcessing(true);
       try {
-        const response = await fetch('http://localhost:5000/api/tools/voicecraft', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/tools/voicecraft`, {
           method: 'POST',
           body: formData,
         });

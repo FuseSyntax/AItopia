@@ -1,9 +1,14 @@
-import Navbar from '../components/Navbar';
+import React from 'react';
+
+// Define types for PrivacySection props
+interface PrivacySectionProps {
+  title: string;
+  content: string;
+}
 
 export default function Privacy() {
   return (
     <div className="min-h-screen bg-custom-black">
-      
       <main className="px-4 sm:px-0 sm:w-[90vw] md:w-[80vw] xl:w-[70vw] mx-auto py-20 space-y-16">
         <div className="text-center space-y-8">
           <h1 className="uppercase font-loos-wide text-4xl md:text-6xl xl:text-7xl font-bold text-orange">
@@ -35,7 +40,7 @@ export default function Privacy() {
   );
 }
 
-const PrivacySection = ({ title, content }) => (
+const PrivacySection: React.FC<PrivacySectionProps> = ({ title, content }) => (
   <div className="backdrop-blur-lg bg-white/5 border border-white/10 rounded-3xl p-8">
     <h2 className="font-loos-wide text-2xl md:text-3xl text-orange mb-4">{title}</h2>
     <p className="font-aeroport text-white/80 text-lg md:text-xl leading-relaxed">

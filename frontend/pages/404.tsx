@@ -1,5 +1,3 @@
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
 import { Bot, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
@@ -23,7 +21,7 @@ const NotFoundPage = () => {
           </h1>
           
           <p className="font-aeroport text-xl md:text-2xl text-white/80 max-w-2xl mx-auto">
-            Our neural networks can't find this page. Let's get you back to familiar territory.
+            Our neural networks {`can't`} find this page. {`Let's`} get you back to familiar territory.
           </p>
 
           <div className="flex flex-col md:flex-row gap-4 justify-center">

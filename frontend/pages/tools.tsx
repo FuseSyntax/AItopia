@@ -1,4 +1,4 @@
-import { Paintbrush, Code2, BrainCircuit, Video, Music, BookText, Speech, Bot, Lock, ImageDown, Clapperboard, CheckCircle2, X } from 'lucide-react';
+import { Paintbrush, Code2, BrainCircuit, BookText, Speech, ImageDown, Clapperboard, CheckCircle2, X } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,7 +17,7 @@ const ToolsPage = () => {
       ? user.subscription
       : null;
   const hasSubscription = subscription?.status === 'active';
-  const purchasedTools = subscription?.selectedTools?.length > 0 ? subscription.selectedTools : [];
+  const purchasedTools = subscription?.selectedTools && Array.isArray(subscription.selectedTools) ? subscription.selectedTools : [];
   const plan = subscription?.plan?.toLowerCase() || 'unknown'; // Normalize to lowercase
 
   // Define package limits based on plan IDs (aligned with PackageTab)
@@ -51,8 +51,8 @@ const ToolsPage = () => {
   const filteredTools = hasSubscription && purchasedTools.length > 0
     ? allTools.filter((tool) => purchasedTools.includes(tool.name))
     : allTools
-        .filter((tool) => selectedCategory === 'all' || tool.category === selectedCategory)
-        .filter((tool) => tool.name.toLowerCase().includes(searchTerm.toLowerCase()));
+      .filter((tool) => selectedCategory === 'all' || tool.category === selectedCategory)
+      .filter((tool) => tool.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   // Handle tool selection in modal
   const handleToolSelect = (tool: string) => {
@@ -183,11 +183,10 @@ const ToolsPage = () => {
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-6 py-2 rounded-xl font-loos-wide transition-all ${
-                    selectedCategory === category
+                  className={`px-6 py-2 rounded-xl font-loos-wide transition-all ${selectedCategory === category
                       ? 'bg-orange text-black'
                       : 'bg-white/5 border border-white/10 hover:bg-white/10'
-                  }`}
+                    }`}
                 >
                   {category}
                 </button>
@@ -342,17 +341,15 @@ const ToolsPage = () => {
                         <motion.div
                           key={tool.name}
                           whileTap={{ scale: 0.95 }}
-                          className={`p-2 rounded-lg cursor-pointer transition-all ${
-                            localSelectedTools.includes(tool.name)
+                          className={`p-2 rounded-lg cursor-pointer transition-all ${localSelectedTools.includes(tool.name)
                               ? 'bg-orange text-black'
                               : 'bg-white/5 hover:bg-white/10'
-                          } ${
-                            maxTools !== Infinity &&
-                            localSelectedTools.length >= maxTools &&
-                            !localSelectedTools.includes(tool.name)
+                            } ${maxTools !== Infinity &&
+                              localSelectedTools.length >= maxTools &&
+                              !localSelectedTools.includes(tool.name)
                               ? 'opacity-50 cursor-not-allowed'
                               : ''
-                          }`}
+                            }`}
                           onClick={() => handleToolSelect(tool.name)}
                         >
                           <div className="flex items-center gap-2">

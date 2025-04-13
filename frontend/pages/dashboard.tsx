@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/router';
@@ -58,7 +58,8 @@ const Dashboard = () => {
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(false);
 
-  const packages: PackageType[] = [
+  // Memoize packages so that its reference remains constant.
+  const packages = useMemo<PackageType[]>(() => [
     {
       id: 'starter',
       title: 'Starter',
@@ -84,7 +85,7 @@ const Dashboard = () => {
       toolsIncluded: 'Unlimited',
       gradient: 'from-emerald-500/20 to-cyan-500/20',
     },
-  ];
+  ], []);
 
   // Fetch user data and settings on mount
   useEffect(() => {
@@ -92,22 +93,26 @@ const Dashboard = () => {
       router.push('/login');
       return;
     }
-
+  
     const fetchData = async () => {
       try {
         setLoading(true);
+        if (!process.env.NEXT_PUBLIC_API_BASE_URL) {
+          throw new Error('NEXT_PUBLIC_API_BASE_URL is not defined');
+        }
+  
         const [profileRes, settingsRes, subRes] = await Promise.all([
-          fetch('http://localhost:5000/api/users/profile', {
+          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/profile`, {
             headers: { Authorization: `Bearer ${user.token}` },
           }),
-          fetch('http://localhost:5000/api/users/Notifications', {
+          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/Notifications`, {
             headers: { Authorization: `Bearer ${user.token}` },
           }),
-          fetch('http://localhost:5000/api/users/subscription', {
+          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/subscription`, {
             headers: { Authorization: `Bearer ${user.token}` },
           }),
         ]);
-
+  
         if (profileRes.ok) setUserData(await profileRes.json());
         if (settingsRes.ok) setNotificationSettings(await settingsRes.json());
         if (subRes.ok) {
@@ -122,9 +127,9 @@ const Dashboard = () => {
         setLoading(false);
       }
     };
-
+  
     fetchData();
-  }, [user, router]);
+  }, [user, router, packages]);
 
   const tabs = [
     { id: 'dashboard', icon: <BarChart />, label: 'Dashboard' },

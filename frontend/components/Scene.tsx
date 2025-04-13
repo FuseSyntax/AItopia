@@ -1,26 +1,30 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { TweenMax, Power2, Power4 } from 'gsap';
+import { TweenMax, Power2 } from 'gsap';
 
-type CustomMesh = THREE.Mesh & {
-  speedValue?: number;
-  speedRotation?: number;
-  positionX?: number;
-  positionY?: number;
-  positionZ?: number;
+// Type for cubes in modularGroup
+type CubeMesh = THREE.Mesh<THREE.IcosahedronGeometry, THREE.MeshStandardMaterial> & {
+  speedRotation: number;
+  positionX: number;
+  positionY: number;
+  positionZ: number;
+  currentHex?: number; // Optional, set only when intersected
+};
+
+// Type for particles in particularGroup
+type ParticleMesh = THREE.Mesh<THREE.CircleGeometry, THREE.MeshPhysicalMaterial> & {
+  speedValue: number;
 };
 
 const Scene = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // mathRandom as in your template
   const mathRandom = (num = 1): number =>
     -Math.random() * num + Math.random() * num;
 
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    // ---------------------------------------------------------
     // Renderer Setup
     const renderer = new THREE.WebGLRenderer({
       canvas: canvasRef.current,
@@ -32,7 +36,6 @@ const Scene = () => {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.shadowMap.needsUpdate = true;
 
-    // ---------------------------------------------------------
     // Camera Setup
     const cameraRange = 3;
     const camera = new THREE.PerspectiveCamera(
@@ -43,20 +46,17 @@ const Scene = () => {
     );
     camera.position.set(0, 0, cameraRange);
 
-    // ---------------------------------------------------------
     // Scene Setup
     const setcolor = 0x000000;
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(setcolor);
     scene.fog = new THREE.Fog(setcolor, 2.5, 3.5);
 
-    // ---------------------------------------------------------
     // Groups Setup
     const sceneGroup = new THREE.Object3D();
     const particularGroup = new THREE.Object3D();
     const modularGroup = new THREE.Object3D();
 
-    // ---------------------------------------------------------
     // Particle Generation
     const generateParticle = (num: number, amp = 2) => {
       const material = new THREE.MeshPhysicalMaterial({
@@ -67,7 +67,7 @@ const Scene = () => {
 
       for (let i = 1; i < num; i++) {
         const pscale = 0.001 + Math.abs(mathRandom(0.03));
-        const particle = new THREE.Mesh(geometry, material) as CustomMesh;
+        const particle = new THREE.Mesh(geometry, material) as ParticleMesh;
         particle.position.set(mathRandom(amp), mathRandom(amp), mathRandom(amp));
         particle.rotation.set(mathRandom(), mathRandom(), mathRandom());
         particle.scale.set(pscale, pscale, pscale);
@@ -83,19 +83,18 @@ const Scene = () => {
     scene.add(modularGroup);
     scene.add(sceneGroup);
 
-    // ---------------------------------------------------------
     // Cube Initialization (Modular Group)
     const init = () => {
       for (let i = 0; i < 30; i++) {
         const geometry = new THREE.IcosahedronGeometry(1);
         const material = new THREE.MeshStandardMaterial({
-          shading: THREE.FlatShading,
+          flatShading: true, // Fixed: use flatShading instead of shading
           color: 0x111111,
           transparent: false,
           opacity: 1,
           wireframe: false,
         });
-        const cube = new THREE.Mesh(geometry, material) as CustomMesh;
+        const cube = new THREE.Mesh(geometry, material) as CubeMesh;
         cube.speedRotation = Math.random() * 0.1;
         cube.positionX = mathRandom();
         cube.positionY = mathRandom();
@@ -117,12 +116,7 @@ const Scene = () => {
 
     init();
 
-    // ---------------------------------------------------------
     // Lighting
-    // Ambient light is commented out as in your template
-    // const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
-    // scene.add(ambientLight);
-
     const spotLight = new THREE.SpotLight(0xffffff, 3);
     spotLight.position.set(5, 5, 2);
     spotLight.castShadow = true;
@@ -142,16 +136,10 @@ const Scene = () => {
     rectLight.lookAt(0, 0, 0);
     scene.add(rectLight);
 
-    // Optional: Add helper for rect light (commented out)
-    // const rectLightHelper = new THREE.RectAreaLightHelper(rectLight);
-    // scene.add(rectLightHelper);
-
-    // ---------------------------------------------------------
     // Raycaster and Mouse Interaction
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
-    let INTERSECTED: THREE.Object3D | null = null;
-    let cameraValue = false;
+    let INTERSECTED: CubeMesh | null = null;
     const uSpeed = 0.1;
 
     const onMouseMove = (event: MouseEvent) => {
@@ -166,16 +154,13 @@ const Scene = () => {
       raycaster.setFromCamera(mouse, camera);
       const intersects = raycaster.intersectObjects(modularGroup.children);
       if (intersects.length > 0) {
-        cameraValue = false;
         if (INTERSECTED !== intersects[0].object) {
-          if (INTERSECTED && (INTERSECTED as any).material.emissive) {
-            (INTERSECTED as any).material.emissive.setHex(
-              (INTERSECTED as any).currentHex
-            );
+          if (INTERSECTED && INTERSECTED.material.emissive && INTERSECTED.currentHex !== undefined) {
+            INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
           }
-          INTERSECTED = intersects[0].object;
-          (INTERSECTED as any).currentHex = (INTERSECTED as any).material.emissive.getHex();
-          (INTERSECTED as any).material.emissive.setHex(0xffff00);
+          INTERSECTED = intersects[0].object as CubeMesh;
+          INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+          INTERSECTED.material.emissive.setHex(0xffff00);
           TweenMax.to(camera.position, 1, {
             x: INTERSECTED.position.x,
             y: INTERSECTED.position.y,
@@ -183,10 +168,8 @@ const Scene = () => {
             ease: Power2.easeInOut,
           });
         } else {
-          if (INTERSECTED && (INTERSECTED as any).material.emissive) {
-            (INTERSECTED as any).material.emissive.setHex(
-              (INTERSECTED as any).currentHex
-            );
+          if (INTERSECTED && INTERSECTED.material.emissive && INTERSECTED.currentHex !== undefined) {
+            INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
           }
           INTERSECTED = null;
         }
@@ -196,7 +179,6 @@ const Scene = () => {
     window.addEventListener('mousemove', onMouseMove, false);
     window.addEventListener('mousedown', onMouseDown, false);
 
-    // ---------------------------------------------------------
     // Animation Loop
     const animate = () => {
       const time = performance.now() * 0.0003;
@@ -204,22 +186,21 @@ const Scene = () => {
 
       // Update Particles
       particularGroup.children.forEach(child => {
-        child.rotation.x += (child as CustomMesh).speedValue! / 10;
-        child.rotation.y += (child as CustomMesh).speedValue! / 10;
-        child.rotation.z += (child as CustomMesh).speedValue! / 10;
+        const particle = child as ParticleMesh;
+        particle.rotation.x += particle.speedValue / 10;
+        particle.rotation.y += particle.speedValue / 10;
+        particle.rotation.z += particle.speedValue / 10;
       });
 
       // Update Cubes
       modularGroup.children.forEach(child => {
-        const cube = child as CustomMesh;
+        const cube = child as CubeMesh;
         cube.rotation.x += 0.008;
         cube.rotation.y += 0.005;
         cube.rotation.z += 0.003;
-        if (cube.positionX && cube.positionY && cube.positionZ) {
-          cube.position.x = Math.sin(time * cube.positionZ) * cube.positionY;
-          cube.position.y = Math.cos(time * cube.positionX) * cube.positionZ;
-          cube.position.z = Math.sin(time * cube.positionY) * cube.positionX;
-        }
+        cube.position.x = Math.sin(time * cube.positionZ) * cube.positionY;
+        cube.position.y = Math.cos(time * cube.positionX) * cube.positionZ;
+        cube.position.z = Math.sin(time * cube.positionY) * cube.positionX;
       });
 
       particularGroup.rotation.y += 0.005;
@@ -234,7 +215,6 @@ const Scene = () => {
 
     animate();
 
-    // ---------------------------------------------------------
     // Resize Handling
     const onResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;

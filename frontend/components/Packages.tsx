@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Rocket, Crown, Gem, Zap, Sparkles, Wallet, BadgeCheck } from 'lucide-react';
+import { Rocket, Sparkles, Wallet, BadgeCheck, Zap, Crown } from 'lucide-react';
 
 const Packages = () => {
-  const [activeTab, setActiveTab] = useState('tools');
   const [selectedPackage, setSelectedPackage] = useState('pro');
 
     // Get current date information

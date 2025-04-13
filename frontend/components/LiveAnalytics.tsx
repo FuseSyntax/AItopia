@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import { LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, Tooltip, CartesianGrid } from 'recharts';
-import { Activity, Zap, Server, Users, Clock, Database, Cloud, Box } from 'lucide-react';
+import { Line, PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, Tooltip, CartesianGrid, ReferenceLine } from 'recharts';
+import { Activity, Database, Box } from 'lucide-react';
+import { TooltipProps } from 'recharts';
 
 const LiveAnalytics = () => {
   const activityData = [
@@ -25,7 +26,7 @@ const LiveAnalytics = () => {
   ];
 
   // Custom tooltip for line chart
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
       return (
         <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl p-4">
@@ -43,16 +44,16 @@ const LiveAnalytics = () => {
   return (
     <div className="relative min-h-screen py-28 overflow-hidden">
       {/* Animated background elements */}
-      <motion.div 
+      <motion.div
         animate={{ x: [0, 100, 0], y: [0, -50, 0] }}
         transition={{ duration: 30, repeat: Infinity }}
         className="absolute w-[600px] h-[600px] bg-gradient-to-r from-orange/10 to-amber-500/10 blur-3xl -top-64 -left-64 rounded-full"
       />
-      
+
       <div className="relative z-10 container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-20">
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="font-loos-wide text-6xl md:text-8xl bg-gradient-to-r from-orange to-amber-500 bg-clip-text text-transparent mb-6"
@@ -67,7 +68,7 @@ const LiveAnalytics = () => {
         {/* Main Dashboard */}
         <div className="grid lg:grid-cols-3 gap-8 mb-12">
           {/* Enhanced Data Flow Section */}
-          <motion.div 
+          <motion.div
             className="lg:col-span-1 space-y-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -79,11 +80,11 @@ const LiveAnalytics = () => {
                 </div>
                 <h3 className="font-loos-wide text-2xl">Data Flow</h3>
               </div>
-              
+
               <div className="h-40 relative">
                 {/* Radial Gradient Background */}
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#FF6B3520_0%,transparent_60%)]" />
-                
+
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     {/* Animated Outer Ring */}
@@ -98,7 +99,7 @@ const LiveAnalytics = () => {
                       stroke="#FFA50020"
                       strokeWidth={2}
                     />
-                    
+
                     {/* Main Data Pie */}
                     <Pie
                       data={resourceData}
@@ -110,8 +111,8 @@ const LiveAnalytics = () => {
                       dataKey="value"
                     >
                       {resourceData.map((entry, index) => (
-                        <Cell 
-                          key={`cell-${index}`} 
+                        <Cell
+                          key={`cell-${index}`}
                           fill={entry.color}
                           stroke={entry.color}
                           strokeWidth={2}
@@ -134,7 +135,7 @@ const LiveAnalytics = () => {
                 </ResponsiveContainer>
 
                 {/* Rotating Particles */}
-                <motion.div 
+                <motion.div
                   className="absolute inset-0"
                   animate={{ rotate: 360 }}
                   transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
@@ -147,7 +148,7 @@ const LiveAnalytics = () => {
           </motion.div>
 
           {/* Enhanced Live Activity Section */}
-          <motion.div 
+          <motion.div
             className="lg:col-span-2 backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -162,7 +163,7 @@ const LiveAnalytics = () => {
                 <span className="font-aeroport">Real-time</span>
               </div>
             </div>
-            
+
             <div className="h-64 relative">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={activityData}>
@@ -198,13 +199,12 @@ const LiveAnalytics = () => {
                   />
 
                   {/* Threshold Line */}
-                  <Line
-                    type="horizontal"
-                    dataKey={80}
+                  <ReferenceLine
+                    y={80}
                     stroke="#FFA50060"
                     strokeDasharray="4 4"
-                    dot={false}
                   />
+
 
                   <Tooltip content={<CustomTooltip />} />
                   <CartesianGrid stroke="#FFFFFF10" vertical={false} />
@@ -235,7 +235,7 @@ const LiveAnalytics = () => {
               whileHover={{ y: -5 }}
             >
               <div className="flex items-center gap-4 mb-6">
-                <div 
+                <div
                   className="p-3 rounded-xl"
                   style={{ backgroundColor: `${project.color}20` }}
                 >
@@ -243,7 +243,7 @@ const LiveAnalytics = () => {
                 </div>
                 <h3 className="font-loos-wide text-2xl">{project.name}</h3>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="h-2 bg-white/10 rounded-full overflow-hidden">
                   <motion.div

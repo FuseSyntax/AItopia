@@ -55,7 +55,7 @@ const ProductRoadmap = () => {
             Evolution Timeline
           </motion.h2>
           <p className="font-aeroport text-xl text-white/80 max-w-2xl mx-auto">
-            Witness our product's journey from foundational architecture to global AI-powered platform
+            Witness our {`product's`} journey from foundational architecture to global AI-powered platform
           </p>
         </div>
 
