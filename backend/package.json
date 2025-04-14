@@ -8,7 +8,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "npm run build && nodemon dist/server.js --watch dist",
-    "postinstall": "prisma generate && (prisma migrate deploy || prisma migrate resolve --applied 0_baseline)",
+    "postinstall": "prisma generate && prisma migrate deploy --schema prisma/schema.prisma",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
