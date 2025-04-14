@@ -19,7 +19,7 @@ type AuthUser = {
 };
 
 type SettingsTabProps = {
-  notificationSettings: NotificationSettings;
+  notificationSettings?: NotificationSettings;
   setNotificationSettings: (settings: NotificationSettings) => void;
   newPassword: string;
   setNewPassword: (value: string) => void;
@@ -31,19 +31,21 @@ type SettingsTabProps = {
   setPasswordSuccess: (value: string) => void;
   deleteConfirm: boolean;
   setDeleteConfirm: (value: boolean) => void;
-  user: AuthUser | null; // Changed to allow null
+  user: AuthUser | null;
   logout: () => void;
 };
 
+// Only keys for notifications (excluding 'theme')
 type NotificationKey = keyof Omit<NotificationSettings, 'theme'>;
 
 const SettingsTab: React.FC<SettingsTabProps> = ({
+  // Provide a default value if notificationSettings is undefined
   notificationSettings = {
     emailNotifications: false,
     pushNotifications: false,
     smsAlerts: false,
     theme: 'System',
-  }, // Default settings
+  },
   setNotificationSettings,
   newPassword,
   setNewPassword,
@@ -106,8 +108,9 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
       return;
     }
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/change-password`, {
-        method: 'POST',
+      // Updated endpoint and method to match backend: PATCH /users/password
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/password`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${user.token}`,
